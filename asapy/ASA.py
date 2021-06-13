@@ -26,6 +26,3 @@ class ASA():
 
     def dumpJson(self) -> dict:
         return self.output.outputJson(self.result)
-
-    def evaluate(self) -> Result:
-        return self.result

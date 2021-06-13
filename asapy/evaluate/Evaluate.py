@@ -1,16 +1,49 @@
 from asapy.result.Result import Result
 import openpyxl
 import json
+from ASA import ASA
 
 class Evaluate():
 
     def __init__(self) -> None:
-        self.number = 27320
+        self.number = 24130
         self.data = self.__openSheet()
         self.totalTp = 0
         self.totalFp = 0
         self.totalFn = 0
         self.totalNn = 0
+        self.asa = ASA()
+
+    def calculate(self):
+        #for i in range(2,24130):
+        #10360あたりのデータが壊れている
+        for i in range(2,19):
+            correct_json = {'correct':[]}
+            values = self.returnValue(i)
+            if values['sentence'] == None:
+                continue
+            else:
+                print("aaaaaaaaaaaa")
+                self.asa.parse(values['sentence'])
+                print("bbbb")
+                result = self.asa.result
+                
+                tp = True
+                fn = False
+
+                for chunk in result.chunks:
+                    correct_chunk = self.chunkType(chunk, values, tp, fn)
+                    tp = correct_chunk['tp']
+                    fn = correct_chunk['fn']
+                    #print(correct_chunk)
+                    correct_json['correct'].append(correct_chunk)
+                self.sumup(tp,fn)
+                # result_json = self.outputJson(result)
+                # filename =  "diff/example_{}.json".format(i-1)
+                # self.outputJsonfile(correct_json, result_json,filename, tp, fn)
+        precision,recall,F_value = self.calculate_value()
+        self.output(precision, recall, F_value)
+
 
     def __openSheet(self):
         wb = openpyxl.load_workbook('data/pth20210305.xlsx')
@@ -30,6 +63,7 @@ class Evaluate():
         semantic = "{}-{}-{}-{}-".format(cell[0][40].value,cell[0][41].value,cell[0][42].value,cell[0][43].value)
         value = {"verb":verb, "sentence":sentence,"semantic":semantic, "case1":case1, "case2":case2, "case3":case3, "case4":case4, "case5":case5,}
         return value
+
 
             #深層系 = semrole
             #格1 = 4~10
@@ -135,7 +169,7 @@ class Evaluate():
 # recall再現率 = tp / (tp+fn) https://www.cse.kyoto-su.ac.jp/~g0846020/keywords/recall.html
 # F-value = 2*precision*recall /(precision + recall)  https://www.cse.kyoto-su.ac.jp/~g0846020/keywords/tpfptnfn.html
 
-    def calculate(self):
+    def calculate_value(self):
         precision = self.totalTp / (self.totalTp + self.totalFp)
         recall = self.totalTp / (self.totalTp + self.totalFn)
         F_value = 2 * precision * recall / (precision + recall)
@@ -146,8 +180,66 @@ class Evaluate():
         print("Recall:",recall)
         print("F_value:",F_value)
 
+        #Precision: 0.29168911917098445
+        #Recall: 0.6413013761049849
+        #F_value: 0.4009915094877201
+
     def outputJsonfile(self,correct_json, result_json, filename,tp, fn):
         if(tp == False or fn == True):
             emptyList = [result_json, correct_json]
             with open(filename,'w') as f: #example_number(1,2)
                 json.dump(emptyList,f,sort_keys=True,indent=4,ensure_ascii=False)
+    
+    def outputJson(self, result: Result) -> None:
+        result_json = {'chunks': [], 'surface': result.surface}
+        for chunk in result.chunks:
+            chunk_dic = {}
+            chunk_dic['id'] = chunk.id
+            chunk_dic['surface'] = chunk.surface
+            chunk_dic['link'] = chunk.link
+            chunk_dic['head'] = chunk.head
+            chunk_dic['Arg'] = chunk.arg #追加した
+            chunk_dic['fanc'] = chunk.fanc
+            chunk_dic['score'] = chunk.score
+            if chunk.modifiedchunks:
+                chunk_dic['modified'] = []
+                for mchunk in chunk.modifiedchunks:
+                    chunk_dic['modified'].append(mchunk.id)
+            chunk_dic['type'] = chunk.ctype
+            chunk_dic['main'] = chunk.main
+            if chunk.part: chunk_dic['part'] = chunk.part
+            if chunk.tense: chunk_dic['tense'] = chunk.tense
+            if chunk.voice: chunk_dic['voice'] = chunk.voice
+            if chunk.polarity: chunk_dic['polarity'] = chunk.polarity
+            if chunk.sentelem: chunk_dic['sentelem'] = chunk.sentelem
+            if chunk.mood: chunk_dic['mood'] = chunk.mood
+            if chunk.semantic: chunk_dic['semantic'] = chunk.semantic
+            if chunk.modifiedchunks:
+                chunk_dic['frames'] = []
+                for mchunk in chunk.modifiedchunks:
+                    frame_dic = {}
+                    frame_dic['id'] = mchunk.id
+                    frame_dic['semrole'] = '|'.join(mchunk.semrole)
+                    chunk_dic['frames'].append(frame_dic)
+            if chunk.semrole: chunk_dic['semrole'] = '|'.join(chunk.semrole)
+            if chunk.adjunct: chunk_dic['adjunct'] = chunk.adjunct
+            if chunk.category: chunk_dic['category'] = chunk.category
+
+            chunk_dic['morphs'] = []
+            for morph in chunk.morphs:
+                morph_dic = {}
+                morph_dic['id'] = morph.id
+                morph_dic['surface'] = morph.surface
+                morph_dic['pos'] = morph.pos
+                morph_dic['cform'] = morph.cform
+                morph_dic['ctype'] = morph.ctype
+                morph_dic['base'] = morph.base
+                morph_dic['read'] = morph.read
+                morph_dic['pos'] = morph.pos
+                if morph.forms:
+                    morph_dic['forms'] = []
+                    for form in morph.forms:
+                        morph_dic['forms'].append(form)
+                chunk_dic['morphs'].append(morph_dic)
+            result_json['chunks'].append(chunk_dic)
+        return result_json
