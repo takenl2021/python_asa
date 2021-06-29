@@ -16,7 +16,7 @@ class Evaluate():
     def calculate(self):
         #for i in range(2,24130):
         #10360あたりのデータが壊れている
-        for i in range(2,50):
+        for i in range(2,1000):
             correct_json = {'correct':[]}
             values = self.returnValue(i)
             if values['sentence'] == None:
@@ -31,8 +31,8 @@ class Evaluate():
                         correct_json['correct'].append(correct_chunk)
                 if correct_json['correct'] != []:
                     result_json = self.outputJson(result)
-                    filename =  "diff/example_{}.json".format(i-1)
-                    self.outputJsonfile(correct_json, result_json,filename)
+                    #filename =  "diff/example_{}.json".format(i-1)
+                    #self.outputJsonfile(correct_json, result_json,filename)
         calc_values = self.calculate_value()
         self.outputResult(calc_values)
 
@@ -89,7 +89,7 @@ class Evaluate():
                     self.SemroleCount['true'] += 1
                     #print('chunk:',chunk.semrole)
                 else:
-                    print('chunk:',chunk.surface)
+                    #print('chunk:',chunk.surface)
                     self.SemroleCount['false'] += 1
                     correct_chunk['semrole'] = values['case1']['semrole']
                     correct_chunk['surface'] = values['case1']['surface']
@@ -146,11 +146,10 @@ class Evaluate():
                     correct_chunk['semrole'] = values['case5']['semrole']
                     correct_chunk['surface'] = values['case5']['surface']
             else:
-                print("Argはあるけど正しく振られてない(fp)") #tp = FALSE retrieved = TRUE,FALSE
+                #print("Argはあるけど正しく振られてない(fp)") #tp = FALSE retrieved = TRUE,FALSE
                 self.ArgCount['falsePositive'] += 1
-        else:
-            print("Argが振られていない=(fn)")
-            #fn = True
+        #else:
+            #print("Argが振られていない=(fn)")
         return correct_chunk
 
     def compareVerb(self, chunk, values):
@@ -167,24 +166,20 @@ class Evaluate():
         for morph in chunk.morphs:
             string_read += morph.read
         
-        if chunk.semantic:
-            if chunk.semantic == semantic:
-                self.SemanticCount['true'] += 1
+        if chunk.main:
+            if chunk.main == values['verb']['verb_main'] and string_read == values['verb']['verb_read']:       
+                if chunk.semantic:
+                    if chunk.semantic == semantic:
+                        self.SemanticCount['true'] += 1
+                    else:
+                        self.SemanticCount['false'] += 1
+                        correct_chunk['semantic'] = semantic
+                else:
+                    self.SemanticCount['falsePositive'] += 1
             else:
-                self.SemanticCount['false'] += 1
-                correct_chunk['semantic'] = semantic
-        else:
-            self.SemanticCount['falsePositive'] += 1
-        # ここいる？        # いるならどこの評価になるんだろう、Arg?Semantic?はたまた別要素？
-        # if chunk.main:
-        #     if chunk.main != values['verb']['verb_main']:
-        #         correct_chunk['verb_main'] = values['verb']['verb_main']
-        #         tp = False
-        # else:
-        #     fn = True
-        # if string_read != values['verb']['verb_read']:
-        #     correct_chunk['verb_read'] = values['verb']['verb_read']
-        #     tp = False
+                self.SemanticCount['falsePositive'] += 1
+                correct_chunk['verb_main'] = values['verb']['verb_main']
+                correct_chunk['verb_read'] = values['verb']['verb_read']
 
         return correct_chunk
 
