@@ -1,6 +1,7 @@
 from asapy.result.Chunk import Chunk
-
+import pickle
 from operator import itemgetter
+from pgmpy.inference import VariableElimination
 
 #
 # フレームより曖昧性を解消する計算を行うクラス
@@ -13,6 +14,7 @@ class Calculate():
 
     def __init__(self, frames: dict) -> None:
         self.frames = frames
+        self.model = self.__getModel("../model_json.pickle")
 
     #
     # 述語のフレームを取得し，その内から最も類似度の高いフレームを取得
@@ -34,6 +36,11 @@ class Calculate():
         frameset = sorted(frameset, key=itemgetter(1))[-1]
         return frameset
 
+    def calc_model(self, verb: str, linkchunks:list):
+        ve = VariableElimination(self.model)
+        for linkchunk in linkchunks:
+            print(ve.map_query(variables=['role','sem'], evidence={'verb':verb,'arg':linkchunk.arg[0],'pos':linkchunk.main,'rel':linkchunk.part,'voice':linkchunk.voice}))
+            exit()
     #
     # 事例の類似度を算出
     #
@@ -119,3 +126,9 @@ class Calculate():
             else: similar = 0.0
         else: similar = 0.0
         return similar
+
+    def __getModel(self, filename):
+        with open(filename, mode='rb') as f:  # with構文でファイルパスとバイナリ読み込みモードを設定
+            model = pickle.load(f)             # 保存
+        return model
+    

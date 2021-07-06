@@ -16,7 +16,7 @@ class Evaluate():
     def calculate(self):
         #for i in range(2,24130):
         #10360あたりのデータが壊れている
-        for i in range(2,1000):
+        for i in range(2,15):
             correct_json = {'correct':[]}
             values = self.returnValue(i)
             if values['sentence'] == None:
@@ -31,8 +31,8 @@ class Evaluate():
                         correct_json['correct'].append(correct_chunk)
                 if correct_json['correct'] != []:
                     result_json = self.outputJson(result)
-                    #filename =  "diff/example_{}.json".format(i-1)
-                    #self.outputJsonfile(correct_json, result_json,filename)
+                    filename =  "diff/example_{}.json".format(i-1)
+                    self.outputJsonfile(correct_json, result_json,filename)
         calc_values = self.calculate_value()
         self.outputResult(calc_values)
 
@@ -238,10 +238,6 @@ class Evaluate():
         print("Arg_recall\t" + str(calc_values['recall']['arg'] * 100) + "%")
         print("Arg_F_value\t" , calc_values['F_value']['arg'] * 100 , "%")
 
-        #Precision: 0.29168911917098445
-        #Recall: 0.6413013761049849
-        #F_value: 0.4009915094877201
-
     def outputJsonfile(self,correct_json, result_json, filename):
             emptyList = [result_json, correct_json]
             with open(filename,'w') as f: #example_number(1,2)
@@ -301,8 +297,6 @@ class Evaluate():
             result_json['chunks'].append(chunk_dic)
         return result_json
 
-#semroleが一つのchunkにふたつあるがどういうことですか ->どういう風に評価?
-#ていうことはargも二つある？
 
 # 全語義: 19793
 #  語義の一致: 17346

@@ -1,7 +1,8 @@
+import pickle
 from asapy.result.Result import Result
 from asapy.result.Morph import Morph
 from asapy.result.Chunk import Chunk
-from asapy.parse.semantic.Calculate import Calculate
+from asapy.parse.pgmpy.Calculate_pgmpy import Calculate
 from asapy.parse.semantic.Adjunct import Adjunct
 from asapy.parse.semantic.NounStructure import NounStructure
 
@@ -24,6 +25,7 @@ class Sematter():
         for verbchunk in verbchunks:
             linkchunks = self.__getLinkChunks(verbchunk)
             self.__setAnotherPart(linkchunks)
+            self.calc.calc_model(verbchunk.main, linkchunks)
             frame = self.calc.getFrame(verbchunk.main, linkchunks)
             if frame:
                 semantic, similar, insts = frame
