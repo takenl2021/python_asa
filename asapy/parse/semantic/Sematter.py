@@ -26,7 +26,7 @@ class Sematter():
 
     def __getModel(self):
         #jsonバージョンは model_json.pickle
-        file = os.path.abspath('/home/ooka/study/python_asa/utils/model_pth.pickle')
+        file = os.path.abspath('/home/ooka/study/python_asa/utils/model_json.pickle')
         with open(file, mode='rb') as f:
             model = pickle.load(f)                  
         return model
@@ -59,6 +59,7 @@ class Sematter():
             self.__setVerb(verbchunk, a)
             self.__setAll(linkchunk,a)
             #print(ve.query(variables=['sem'],evidence={'verb': verb}))
+            #TODO データがないとき（聞ける）に似たような単語に置き換える
 
     def __setVerb(self, chunk, esti):
         chunk.semantic = esti['sem']
