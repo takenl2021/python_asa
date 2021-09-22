@@ -54,7 +54,7 @@ if __name__ == '__main__':
             if values["case5"]["Arg"] != "false" and values["case5"]["Arg"] != None and values["case5"]["Arg"] != False:
                 df = df.append({'verb': values["verb"]["verb_main"], 'arg': values["case5"]["Arg"], 'pos': str(values["case5"]['surface'])[:-1] if values["case5"]['surface'] != None else '*', 'rel': values["case5"]['pos'], 'voice': '*', 'sem':semantic, 'role': values["case5"]["semrole"]}, ignore_index=True)
 
-    model = BayesianModel([('sem','role'),('sem','voice'),('sem','verb'),('sem','role'),('role','arg'),('role','pos'),('role','rel')])
+    model = BayesianModel([('sem','role'),('sem','voice'),('sem','verb'),('role','arg'),('role','pos'),('role','rel')])
     #estimator = BayesianEstimator(model, df)
     model.fit(df,estimator=BayesianEstimator)
     #print(model.get_cpds('verb'))

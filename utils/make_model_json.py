@@ -19,8 +19,8 @@ import pickle
 if __name__ == '__main__':
     files = JsonFile()
     dicts = LoadJson(files)
-    parser = Parse(dicts, "cabocha")
-    output = Output()
+    #parser = Parse(dicts, "cabocha")
+    #output = Output()
     frames = dicts.frames.frames
     columns = ['verb', 'arg', 'pos', 'rel', 'voice', 'sem', 'role']
     df = pd.DataFrame(columns=columns)
@@ -33,10 +33,10 @@ if __name__ == '__main__':
                     for cases in instance['instance']:
                         for case in cases['cases']:
                             df = df.append({'verb': verb, 'arg': case['arg'], 'pos': case['noun'], 'rel': case['part'], 'voice': '*', 'sem':semantic, 'role': case['semrole']}, ignore_index=True)
-    model = BayesianModel([('sem','role'),('sem','voice'),('sem','verb'),('sem','role'),('role','arg'),('role','pos'),('role','rel')])
+    model = BayesianModel([('sem','role'),('sem','voice'),('sem','verb'),('role','arg'),('role','pos'),('role','rel')])
     model.fit(df,estimator=BayesianEstimator)
-    #filename = 'model_json.pickle' #変えてもいい
-    #with open('model_json.pickle', mode='wb') as f:
-    #        pickle.dump(model,f)    
+    filename = 'model_json.pickle' #変えてもいい
+    with open('model_json.pickle', mode='wb') as f:
+            pickle.dump(model,f)    
     print('終了')
     

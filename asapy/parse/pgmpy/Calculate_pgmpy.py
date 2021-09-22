@@ -14,7 +14,7 @@ class Calculate():
 
     def __init__(self, frames: dict) -> None:
         self.frames = frames
-        self.model = self.__getModel("../model_json.pickle")
+        self.model = self.__getModel("../utils/model_json.pickle")
 
     #
     # 述語のフレームを取得し，その内から最も類似度の高いフレームを取得
@@ -36,11 +36,10 @@ class Calculate():
         frameset = sorted(frameset, key=itemgetter(1))[-1]
         return frameset
 
-    def calc_model(self, verb: str, linkchunks:list):
-        ve = VariableElimination(self.model)
-        for linkchunk in linkchunks:
-            print(ve.map_query(variables=['role','sem'], evidence={'verb':verb,'arg':linkchunk.arg[0],'pos':linkchunk.main,'rel':linkchunk.part,'voice':linkchunk.voice}))
-            exit()
+#    def calc_model(self, verb: str, linkchunks:list):
+#        ve = VariableElimination(self.model)
+#        for linkchunk in linkchunks:
+#            print(ve.map_query(variables=['role','sem'], evidence={'verb':verb,'arg':linkchunk.arg[0],'pos':linkchunk.main,'rel':linkchunk.part,'voice':linkchunk.voice}))
     #
     # 事例の類似度を算出
     #
