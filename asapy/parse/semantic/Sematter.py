@@ -36,7 +36,7 @@ class Sematter():
         for verbchunk in verbchunks:
             linkchunks = self.__getLinkChunks(verbchunk)
             self.__setAnotherPart(linkchunks)
-            self.calc_model(verbchunk,verbchunk.main,linkchunks) #ここでモデルの計算
+            #self.calc_model(verbchunk,verbchunk.main,linkchunks) #ここでモデルの計算
             frame = self.calc.getFrame(verbchunk.main, linkchunks)
             if frame:
                 semantic, similar, insts = frame

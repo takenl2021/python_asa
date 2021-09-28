@@ -36,15 +36,15 @@ class Sematter():
         for verbchunk in verbchunks:
             linkchunks = self.__getLinkChunks(verbchunk)
             self.__setAnotherPart(linkchunks)
-            #self.calc_model(verbchunk,verbchunk.main,linkchunks) #ここでモデルの計算
+            self.calc_model(verbchunk,verbchunk.main,linkchunks) #ここでモデルの計算
             frame = self.calc.getFrame(verbchunk.main, linkchunks)
-            if frame:
-                semantic, similar, insts = frame
-                self.__setSemantic(semantic, similar, verbchunk)
-                self.__setSemRole(insts)
-                self.__setArg(insts)
-                self.__setSpecialSemantic(verbchunk)
-                self.adjunct.parse(verbchunk.modifiedchunks)
+            # if frame:
+            #     semantic, similar, insts = frame
+            #     self.__setSemantic(semantic, similar, verbchunk)
+            #     self.__setSemRole(insts)
+            #     self.__setArg(insts)
+            #     self.__setSpecialSemantic(verbchunk)
+            #     self.adjunct.parse(verbchunk.modifiedchunks)
         nounchunks = self.__getNounChunks(result)
         for nounchunk in nounchunks:
             self.nounstruct.parse(nounchunk)
@@ -56,9 +56,9 @@ class Sematter():
         for linkchunk in linkchunks:
             a = ve.map_query(variables=['sem','role','arg'], evidence={'verb':verb,'pos':linkchunk.main,'rel':linkchunk.part,'voice':'*'})
             #print(ve.map_query(variables=['sem','role','arg'], evidence={'verb':verb,'pos':linkchunk.main,'rel':linkchunk.part,'voice':'*'}))
+            #exit()
             self.__setVerb(verbchunk, a)
             self.__setAll(linkchunk,a)
-            #print(ve.query(variables=['sem'],evidence={'verb': verb}))
             #TODO データがないとき（聞ける）に似たような単語に置き換える
 
     def __setVerb(self, chunk, esti):
@@ -71,6 +71,7 @@ class Sematter():
         chunk.arg.append(esti['arg'])
         print(esti['role'])
         print(esti['arg'])
+        print("I AM HERE SET ALL")
     #
     # 係り先である節を取得
     #

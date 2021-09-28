@@ -35,11 +35,6 @@ class Calculate():
                     frameset.append((frame['semantic'], -1.0, []))
         frameset = sorted(frameset, key=itemgetter(1))[-1]
         return frameset
-
-#    def calc_model(self, verb: str, linkchunks:list):
-#        ve = VariableElimination(self.model)
-#        for linkchunk in linkchunks:
-#            print(ve.map_query(variables=['role','sem'], evidence={'verb':verb,'arg':linkchunk.arg[0],'pos':linkchunk.main,'rel':linkchunk.part,'voice':linkchunk.voice}))
     #
     # 事例の類似度を算出
     #
