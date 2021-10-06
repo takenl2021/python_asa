@@ -11,6 +11,7 @@ from pgmpy.estimators import BayesianEstimator
 import pandas as pd
 import pickle
 import openpyxl
+import re
 
 def returnValue(id,data):
         obj = "A{}:BB{}".format(id,id)
@@ -25,6 +26,18 @@ def returnValue(id,data):
         semantic = {"1": cell[0][40].value, "2":cell[0][41].value,"3":cell[0][42].value,"4":cell[0][43].value,"5":cell[0][44].value}
         value = {"verb":verb, "sentence":sentence,"semantic":semantic, "case1":case1, "case2":case2, "case3":case3, "case4":case4, "case5":case5,}
         return value
+
+def remove_part(surface,part):
+    try:
+        spliter = re.split('[・?]',part)
+    except TypeError:
+        return surface, part
+    for split in spliter:
+        if surface != surface.rstrip(split):
+            surface = surface.rstrip(split)
+            part = split
+    #print(surface,part)
+    return surface , part
 
 if __name__ == '__main__':
     DATA_NUM = 24130
@@ -44,25 +57,26 @@ if __name__ == '__main__':
                 continue
         else:
             if values["case1"]["Arg"] != "false" and values["case1"]["Arg"] != None and values["case1"]["Arg"] != False:
-               df = df.append({'verb': values["verb"]["verb_main"], 'arg': values["case1"]["Arg"], 'pos': str(values["case1"]['surface'])[:-1] if values["case1"]['surface'] != None else '*', 'rel': values["case1"]['pos'], 'voice': '*', 'sem':semantic, 'role': values["case1"]["semrole"]}, ignore_index=True)
+                surface , part = remove_part((values["case1"]['surface']) if values["case1"]['surface'] != None else '*', values["case1"]['pos'])
+                df = df.append({'verb': values["verb"]["verb_main"], 'arg': values["case1"]["Arg"], 'pos': str(surface), 'rel': part, 'voice': '*', 'sem':semantic, 'role': values["case1"]["semrole"]}, ignore_index=True)
             if values["case2"]["Arg"] != "false" and values["case2"]["Arg"] != None and values["case2"]["Arg"] != False:
-               df = df.append({'verb': values["verb"]["verb_main"], 'arg': values["case2"]["Arg"], 'pos': str(values["case2"]['surface'])[:-1] if values["case2"]['surface'] != None else '*', 'rel': values["case2"]['pos'], 'voice': '*', 'sem':semantic, 'role': values["case2"]["semrole"]}, ignore_index=True)
+                surface , part = remove_part((values["case2"]['surface']) if values["case2"]['surface'] != None else '*', values["case2"]['pos'])
+                df = df.append({'verb': values["verb"]["verb_main"], 'arg': values["case2"]["Arg"], 'pos': str(surface), 'rel': part, 'voice': '*', 'sem':semantic, 'role': values["case2"]["semrole"]}, ignore_index=True)
             if values["case3"]["Arg"] != "false" and values["case3"]["Arg"] != None and values["case3"]["Arg"] != False:
-               df = df.append({'verb': values["verb"]["verb_main"], 'arg': values["case3"]["Arg"], 'pos': str(values["case3"]['surface'])[:-1] if values["case3"]['surface'] != None else '*', 'rel': values["case3"]['pos'], 'voice': '*', 'sem':semantic, 'role': values["case3"]["semrole"]}, ignore_index=True)
+                surface , part = remove_part((values["case3"]['surface']) if values["case3"]['surface'] != None else '*', values["case3"]['pos'])
+                df = df.append({'verb': values["verb"]["verb_main"], 'arg': values["case3"]["Arg"], 'pos': str(surface), 'rel': part, 'voice': '*', 'sem':semantic, 'role': values["case3"]["semrole"]}, ignore_index=True)
             if values["case4"]["Arg"] != "false" and values["case4"]["Arg"] != None and values["case4"]["Arg"] != False:
-                df = df.append({'verb': values["verb"]["verb_main"], 'arg': values["case4"]["Arg"], 'pos': str(values["case4"]['surface'])[:-1] if values["case4"]['surface'] != None else '*', 'rel': values["case4"]['pos'], 'voice': '*', 'sem':semantic, 'role': values["case4"]["semrole"]}, ignore_index=True)
+                surface , part = remove_part((values["case4"]['surface']) if values["case4"]['surface'] != None else '*', values["case4"]['pos'])
+                df = df.append({'verb': values["verb"]["verb_main"], 'arg': values["case4"]["Arg"], 'pos': str(surface), 'rel': part, 'voice': '*', 'sem':semantic, 'role': values["case4"]["semrole"]}, ignore_index=True)
             if values["case5"]["Arg"] != "false" and values["case5"]["Arg"] != None and values["case5"]["Arg"] != False:
-                df = df.append({'verb': values["verb"]["verb_main"], 'arg': values["case5"]["Arg"], 'pos': str(values["case5"]['surface'])[:-1] if values["case5"]['surface'] != None else '*', 'rel': values["case5"]['pos'], 'voice': '*', 'sem':semantic, 'role': values["case5"]["semrole"]}, ignore_index=True)
+                surface , part = remove_part((values["case5"]['surface']) if values["case5"]['surface'] != None else '*', values["case5"]['pos'])
+                df = df.append({'verb': values["verb"]["verb_main"], 'arg': values["case5"]["Arg"], 'pos': str(surface), 'rel': part, 'voice': '*', 'sem':semantic, 'role': values["case5"]["semrole"]}, ignore_index=True)
 
     model = BayesianModel([('sem','role'),('sem','voice'),('sem','verb'),('role','arg'),('role','pos'),('role','rel')])
-    #estimator = BayesianEstimator(model, df)
     model.fit(df,estimator=BayesianEstimator)
-    #print(model.get_cpds('verb'))
     filename = 'model_pth.pickle' #変えてもいい
-    #with open('model_pth.pickle', mode='wb') as f:
-    #        pickle.dump(model,f)    
-    #print(estimator.estimate_cpd('role'))
-    #print(model.get_cpds('role'))
+    with open('model_pth.pickle', mode='wb') as f:
+            pickle.dump(model,f)    
     print('終了')
     #TODO 助詞を文字列マッチで消す
 

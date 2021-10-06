@@ -1,6 +1,6 @@
 import time
 from asapy.result.Result import Result
-from evaluate.Evaluate import Evaluate
+from evaluate.Evaluate_pgmpy import Evaluate
 
 EXAMPLES = 24130 #should be changed
 
@@ -14,3 +14,7 @@ if __name__ == '__main__':
     elapsed_time = time.time() - start
     print("elapsed_time:{0}".format(elapsed_time) + "[sec]")
     print('終了')
+
+
+
+#参考になりそうなやつ 雲隠れ

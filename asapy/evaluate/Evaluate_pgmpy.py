@@ -1,7 +1,8 @@
 from asapy.result.Result import Result
 import openpyxl
 import json
-from ASA import ASA
+from ASA_pgmpy import ASA
+import time
 
 class Evaluate():
 
@@ -16,7 +17,8 @@ class Evaluate():
     def calculate(self):
         #for i in range(2,24130):
         #10360あたりのデータが壊れている
-        for i in range(2,self.number):
+        for i in range(24001,24130):
+            print(i)
             correct_json = {'correct':[]}
             values = self.returnValue(i)
             if values['sentence'] == None:
@@ -29,10 +31,10 @@ class Evaluate():
                     correct_chunk = self.chunkType(chunk, values)
                     if correct_chunk != {}:
                         correct_json['correct'].append(correct_chunk)
-                # if correct_json['correct'] != []:
-                #     result_json = self.outputJson(result)
-                #     filename =  "diff/example_{}.json".format(i-1)
-                #     self.outputJsonfile(correct_json, result_json,filename)
+                    if correct_json['correct'] != []:
+                        result_json = self.outputJson(result)
+                        filename =  "diff/example_{}.json".format(i-1)
+                        self.outputJsonfile(correct_json, result_json,filename)
         calc_values = self.calculate_value()
         self.outputResult(calc_values)
 
@@ -87,7 +89,9 @@ class Evaluate():
                     correct_chunk['surface'] = values['case1']['surface']
                 if chunk.semrole[0] == values['case1']['semrole']:
                     self.SemroleCount['true'] += 1
+                    #print('chunk:',chunk.semrole)
                 else:
+                    #print('chunk:',chunk.surface)
                     self.SemroleCount['false'] += 1
                     correct_chunk['semrole'] = values['case1']['semrole']
                     correct_chunk['surface'] = values['case1']['surface']
@@ -160,7 +164,7 @@ class Evaluate():
                 semantic += "-"
             else:
                 semantic += "{}-".format(frame)
-        semantic = semantic[:-1]
+        #semantic = semantic[:-1]
         for morph in chunk.morphs:
             string_read += morph.read
         
@@ -235,6 +239,10 @@ class Evaluate():
         print("Arg_presicion\t" + str(calc_values['precision']['arg'] * 100) + "%")
         print("Arg_recall\t" + str(calc_values['recall']['arg'] * 100) + "%")
         print("Arg_F_value\t" , calc_values['F_value']['arg'] * 100 , "%")
+        print()
+        print("Semantic" + str(self.SemanticCount))
+        print("Semrole" + str(self.SemroleCount))
+        print("Arg" + str(self.ArgCount))
 
     def outputJsonfile(self,correct_json, result_json, filename):
             emptyList = [result_json, correct_json]
@@ -319,3 +327,159 @@ class Evaluate():
 # Arg_presicion   75.956268472553%
 # Arg_recall      92.82508065647356%
 # Arg_F_value      83.54769983429338 %
+
+#--------------------PGMPY----------------------
+
+# 全語義: 1009
+#  語義の一致: 811
+#  語義の不一致: 152
+#  取れなかった動詞: 46
+# Semantic_precision      84.2159916926272%
+# Semantic_recall 94.63243873978998%
+# Semantic_F_value         89.12087912087912 %
+
+# 全意味役割: 1993
+#  意味役割の一致: 1800
+#  意味役割の不一致: 193
+#  取れなかったchunk: 0
+# Semrole_presicion       90.31610637230307%
+# Semrole_recall  100.0%
+# Semantic_F_value         94.91167940943843 %
+
+# 全Arg: 2020
+#  Argの一致: 1784
+#  Argの不一致: 209
+#  取れなかったArg: 27
+# Arg_presicion   89.5132965378826%
+# Arg_recall      98.50911098840419%
+# Arg_F_value      93.79600420609884 %
+
+# ----------1~1000-----------
+# Semantic{'true': 811, 'false': 152, 'falsePositive': 46}
+# Semrole{'true': 1800, 'false': 193, 'falsePositive': 0}
+# Arg{'true': 1784, 'false': 209, 'falsePositive': 27}
+
+# ----------1001~2000-------
+# Semantic{'true': 759, 'false': 210, 'falsePositive': 35}
+# Semrole{'true': 1987, 'false': 121, 'falsePositive': 0}
+# Arg{'true': 1909, 'false': 199, 'falsePositive': 26}
+
+# ----------2001~3000-------
+# Semantic{'true': 858, 'false': 120, 'falsePositive': 26}
+# Semrole{'true': 1833, 'false': 101, 'falsePositive': 0}
+# Arg{'true': 1869, 'false': 65, 'falsePositive': 19}
+
+# ----------3001~4000-------
+# Semantic{'true': 742, 'false': 193, 'falsePositive': 68}
+# Semrole{'true': 1345, 'false': 140, 'falsePositive': 0}
+# Arg{'true': 1174, 'false': 311, 'falsePositive': 60}
+
+# ----------4001~5000-------
+# Semantic{'true': 701, 'false': 218, 'falsePositive': 82}
+# Semrole{'true': 1354, 'false': 186, 'falsePositive': 0}
+# Arg{'true': 838, 'false': 702, 'falsePositive': 45}
+
+# ----------5001~6000-------
+# Semantic{'true': 717, 'false': 232, 'falsePositive': 60}
+# Semrole{'true': 1392, 'false': 111, 'falsePositive': 0}
+# Arg{'true': 1426, 'false': 77, 'falsePositive': 26}
+
+# ----------6001~7000-------
+# Semantic{'true': 712, 'false': 246, 'falsePositive': 47}
+# Semrole{'true': 1386, 'false': 150, 'falsePositive': 0}
+# Arg{'true': 1327, 'false': 209, 'falsePositive': 38}
+
+# ----------7001~8000-------
+# Semantic{'true': 794, 'false': 171, 'falsePositive': 38}
+# Semrole{'true': 1581, 'false': 137, 'falsePositive': 0}
+# Arg{'true': 1560, 'false': 158, 'falsePositive': 113}
+
+# ----------8001~9000-------
+# Semantic{'true': 750, 'false': 198, 'falsePositive': 65}
+# Semrole{'true': 1351, 'false': 167, 'falsePositive': 0}
+# Arg{'true': 1333, 'false': 185, 'falsePositive': 31}
+
+# ----------9001~10000-------
+# Semantic{'true': 701, 'false': 216, 'falsePositive': 77}
+# Semrole{'true': 1276, 'false': 150, 'falsePositive': 0}
+# Arg{'true': 1215, 'false': 211, 'falsePositive': 36}
+
+# ----------10001~11000-------
+# Semantic{'true': 513, 'false': 164, 'falsePositive': 118}
+# Semrole{'true': 1190, 'false': 155, 'falsePositive': 0}
+# Arg{'true': 1109, 'false': 236, 'falsePositive': 75}
+
+# ----------11001~12000-------
+# Semantic{'true': 436, 'false': 129, 'falsePositive': 168}
+# Semrole{'true': 1251, 'false': 119, 'falsePositive': 0}
+# Arg{'true': 1171, 'false': 199, 'falsePositive': 140}
+
+# ----------12001~13000-------
+# Semantic{'true': 439, 'false': 194, 'falsePositive': 122}
+# Semrole{'true': 1255, 'false': 155, 'falsePositive': 0}
+# Arg{'true': 1177, 'false': 233, 'falsePositive': 78}
+
+# ----------13001~14000-------
+# Semantic{'true': 379, 'false': 158, 'falsePositive': 149}
+# Semrole{'true': 1182, 'false': 165, 'falsePositive': 0}
+# Arg{'true': 1116, 'false': 231, 'falsePositive': 105}
+
+# ----------14001~15000-------
+# Semantic{'true': 395, 'false': 131, 'falsePositive': 105}
+# Semrole{'true': 1150, 'false': 132, 'falsePositive': 0}
+# Arg{'true': 1085, 'false': 197, 'falsePositive': 119}
+
+# ----------15001~16000-------
+# Semantic{'true': 485, 'false': 135, 'falsePositive': 132}
+# Semrole{'true': 1224, 'false': 109, 'falsePositive': 0}
+# Arg{'true': 1116, 'false': 217, 'falsePositive': 110}
+
+# ----------16001~17000-------
+# Semantic{'true': 426, 'false': 95, 'falsePositive': 121}
+# Semrole{'true': 1187, 'false': 126, 'falsePositive': 0}
+# Arg{'true': 1127, 'false': 186, 'falsePositive': 83}
+
+# ----------17001~18000-------
+# Semantic{'true': 501, 'false': 193, 'falsePositive': 127}
+# Semrole{'true': 1294, 'false': 159, 'falsePositive': 0}
+# Arg{'true': 1237, 'false': 216, 'falsePositive': 77}
+
+# ----------18001~19000-------
+# Semantic{'true': 518, 'false': 152, 'falsePositive': 120}
+# Semrole{'true': 1219, 'false': 156, 'falsePositive': 0}
+# Arg{'true': 1142, 'false': 233, 'falsePositive': 100}
+
+# ----------19001~20000-------
+# Semantic{'true': 524, 'false': 147, 'falsePositive': 114}
+# Semrole{'true': 1242, 'false': 134, 'falsePositive': 0}
+# Arg{'true': 1203, 'false': 173, 'falsePositive': 78}
+
+# ----------20001~21000-------
+# Semantic{'true': 373, 'false': 195, 'falsePositive': 102}
+# Semrole{'true': 1130, 'false': 114, 'falsePositive': 0}
+# Arg{'true': 1055, 'false': 189, 'falsePositive': 63}
+
+# ----------21001~22000-------
+# Semantic{'true': 441, 'false': 118, 'falsePositive': 102}
+# Semrole{'true': 1132, 'false': 118, 'falsePositive': 0}
+# Arg{'true': 1033, 'false': 217, 'falsePositive': 96}
+
+# ----------22001~23000-------
+# Semantic{'true': 405, 'false': 114, 'falsePositive': 111}
+# Semrole{'true': 1136, 'false': 143, 'falsePositive': 0}
+# Arg{'true': 1041, 'false': 238, 'falsePositive': 93}
+
+# ----------23001~24000-------
+# Semantic{'true': 347, 'false': 89, 'falsePositive': 356}
+# Semrole{'true': 880, 'false': 162, 'falsePositive': 0}
+# Arg{'true': 815, 'false': 227, 'falsePositive': 157}
+
+# ----------24001~24130-------
+# Semantic{'true': 4, 'false': 4, 'falsePositive': 106}
+# Semrole{'true': 24, 'false': 5, 'falsePositive': 0}
+# Arg{'true': 23, 'false': 6, 'falsePositive': 11}
+
+#---------1~24130-------------
+# SemanticCount = {'true': 13731, 'false' : 3752, 'falsePositive' : 2597}
+# SemroleCount = {'true': 31801, 'false': 3408, 'falsePositive' :0}
+# ArgCount = {'true': 29885, 'false' : 5324, 'falsePositive' :1806}

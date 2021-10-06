@@ -1,9 +1,9 @@
 from asapy.result.Result import Result
 from asapy.result.Morph import Morph
 from asapy.result.Chunk import Chunk
-from asapy.parse.semantic.Calculate import Calculate
-from asapy.parse.semantic.Adjunct import Adjunct
-from asapy.parse.semantic.NounStructure import NounStructure
+from asapy.parse.pgmpy.Calculate_pgmpy import Calculate
+from asapy.parse.pgmpy.Adjunct_pgmpy import Adjunct
+from asapy.parse.pgmpy.NounStructure_pgmpy import NounStructure
 
 import pprint
 import pickle
@@ -22,14 +22,16 @@ class Sematter():
         self.calc = Calculate(frames)
         self.adjunct = Adjunct()
         self.nounstruct = NounStructure(nouns, frames)
-        self.model = self.__getModel()
+        self.ve = self.__getModel()
 
     def __getModel(self):
         #jsonバージョンは model_json.pickle
-        file = os.path.abspath('/home/ooka/study/python_asa/utils/model_json.pickle')
+        #file = os.path.abspath('/home/ooka/study/python_asa/utils/model_json.pickle')
+        file = os.path.abspath('/home/ooka/study/python_asa/utils/model_pth.pickle')
         with open(file, mode='rb') as f:
-            model = pickle.load(f)                  
-        return model
+            model = pickle.load(f)   
+        ve = VariableElimination(model)   
+        return ve
 
     def parse(self, result: Result) -> None:
         verbchunks = self.__getSemChunks(result)
@@ -37,7 +39,7 @@ class Sematter():
             linkchunks = self.__getLinkChunks(verbchunk)
             self.__setAnotherPart(linkchunks)
             self.calc_model(verbchunk,verbchunk.main,linkchunks) #ここでモデルの計算
-            frame = self.calc.getFrame(verbchunk.main, linkchunks)
+            #frame = self.calc.getFrame(verbchunk.main, linkchunks)
             # if frame:
             #     semantic, similar, insts = frame
             #     self.__setSemantic(semantic, similar, verbchunk)
@@ -52,26 +54,31 @@ class Sematter():
         return result
 
     def calc_model(self, verbchunk, verb, linkchunks):
-        ve = VariableElimination(self.model)
+        #ve = VariableElimination(self.model)
         for linkchunk in linkchunks:
-            a = ve.map_query(variables=['sem','role','arg'], evidence={'verb':verb,'pos':linkchunk.main,'rel':linkchunk.part,'voice':'*'})
-            #print(ve.map_query(variables=['sem','role','arg'], evidence={'verb':verb,'pos':linkchunk.main,'rel':linkchunk.part,'voice':'*'}))
-            #exit()
-            self.__setVerb(verbchunk, a)
-            self.__setAll(linkchunk,a)
+            try:
+                a = self.ve.map_query(variables=['sem','role','arg'], evidence={'verb':verb,'pos':linkchunk.main,'rel':linkchunk.part,'voice':'*'})
+                self.__setVerb(verbchunk, a)
+                self.__setAll(linkchunk, a)
+                #self.adjunct.parse(verbchunk.modifiedchunks)
+            except KeyError:
+                print("HAHAHAHAH")
+                self.adjunct.parse(verbchunk.modifiedchunks)
+
             #TODO データがないとき（聞ける）に似たような単語に置き換える
 
     def __setVerb(self, chunk, esti):
-        chunk.semantic = esti['sem']
-        print(esti['sem'])
-        print("I AM HERE")
+        #print(esti['sem'])
+        if esti['sem']:
+            chunk.semantic = esti['sem']
 
-    def __setAll(self, chunk, esti):    
-        chunk.semrole.append(esti['role'])
-        chunk.arg.append(esti['arg'])
-        print(esti['role'])
-        print(esti['arg'])
-        print("I AM HERE SET ALL")
+    def __setAll(self, chunk, esti):
+        #print(esti['role'] + "|" + esti['arg'])
+        if esti['role']:
+            chunk.semrole.append(esti['role'])
+        if esti['arg']:
+            chunk.arg.append(esti['arg'])
+
     #
     # 係り先である節を取得
     #
