@@ -17,7 +17,7 @@ class Evaluate():
     def calculate(self):
         #for i in range(2,24130):
         #10360あたりのデータが壊れている
-        for i in range(24001,24130):
+        for i in range(2,1000): #2~24130
             print(i)
             correct_json = {'correct':[]}
             values = self.returnValue(i)

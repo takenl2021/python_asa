@@ -27,7 +27,8 @@ class Sematter():
     def __getModel(self):
         #jsonバージョンは model_json.pickle
         #file = os.path.abspath('/home/ooka/study/python_asa/utils/model_json.pickle')
-        file = os.path.abspath('/home/ooka/study/python_asa/utils/model_pth.pickle')
+        #file = os.path.abspath('/home/ooka/study/python_asa/utils/model_pth.pickle')
+        file = '../utils/model_pth.pickle'
         with open(file, mode='rb') as f:
             model = pickle.load(f)   
         ve = VariableElimination(model)   
@@ -54,30 +55,24 @@ class Sematter():
         return result
 
     def calc_model(self, verbchunk, verb, linkchunks):
-        #ve = VariableElimination(self.model)
         for linkchunk in linkchunks:
             try:
-                a = self.ve.map_query(variables=['sem','role','arg'], evidence={'verb':verb,'pos':linkchunk.main,'rel':linkchunk.part,'voice':'*'})
-                self.__setVerb(verbchunk, a)
-                self.__setAll(linkchunk, a)
+                estimate = self.ve.map_query(variables=['sem','role','arg'], evidence={'verb':verb,'pos':linkchunk.main,'rel':linkchunk.part,'voice':'*'})
+                self.__setAll(linkchunk, verbchunk , estimate)
                 #self.adjunct.parse(verbchunk.modifiedchunks)
             except KeyError:
-                print("HAHAHAHAH")
                 self.adjunct.parse(verbchunk.modifiedchunks)
 
-            #TODO データがないとき（聞ける）に似たような単語に置き換える
+            #TODO try-exceptの処理の改善->精度の向上
 
-    def __setVerb(self, chunk, esti):
-        #print(esti['sem'])
-        if esti['sem']:
-            chunk.semantic = esti['sem']
-
-    def __setAll(self, chunk, esti):
+    def __setAll(self, linkchunk, verbchunk, esti):
         #print(esti['role'] + "|" + esti['arg'])
         if esti['role']:
-            chunk.semrole.append(esti['role'])
+            linkchunk.semrole.append(esti['role'])
         if esti['arg']:
-            chunk.arg.append(esti['arg'])
+            linkchunk.arg.append(esti['arg'])
+        if esti['sem']:
+            verbchunk.semantic = esti['sem']
 
     #
     # 係り先である節を取得

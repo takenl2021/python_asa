@@ -95,3 +95,18 @@ if __name__ == '__main__':
         result_chunks = result_json['chunks']
         out_predarg(result_chunks)
 ```
+
+-----------------------------------------------
+PGMPY
+## 使用方法
+``` cd utils ``` で ```python make_model_pth.py ```を実行。 modelが作成されます
+``` asapy ```階層で ``` python main_pgmpy.py ```を実行。
+
+main_pgmpy -> ASA_pgmpy -> Parse_pgmpy -> Sematter_pgmpy の順に主な処理が行われている。特にSematter_pgmpyの57~75行目
+
+## 評価方法
+modelを上記の方法で作成
+``` asapy ```階層で ``` evaluate_pgmpy.py ```を実行。
+この際``` evaluate ```フォルダ内の``` Evaluate_pgmpy.py ```の20行目の '''for i in range(2,1000): #2~24130 '''の数値を適宜変えてください。
+この数値のセルを評価します。動作が遅いので1000件単位をおすすめします。
+diffファイルにjsonファイルが出力される。
