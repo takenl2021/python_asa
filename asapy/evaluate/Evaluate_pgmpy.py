@@ -8,7 +8,7 @@ class Evaluate():
 
     def __init__(self) -> None:
         self.number = 24130
-        self.data = self.__openSheet()
+        self.sheet = self.__openSheet()
         self.SemanticCount = {'true': 0, 'false' :0, 'falsePositive' : 0}
         self.ArgCount = {'true': 0, 'false' : 0, 'falsePositive' :0}
         self.SemroleCount = {'true': 0, 'false': 0, 'falsePositive' :0}
@@ -46,7 +46,7 @@ class Evaluate():
 
     def returnValue(self, id):
         obj = "A{}:BB{}".format(id,id)
-        cell = self.data[obj]
+        cell = self.sheet[obj]
         sentence = cell[0][39].value
         verb = {"verb_main":cell[0][2].value,"verb_read":cell[0][3].value}
         case1 = {"semrole":cell[0][4].value,"Arg":cell[0][5].value,"表層格":cell[0][6].value,"surface": cell[0][7].value,"格要素":cell[0][8].value,"フレーム変数": cell[0][9].value,"Filled": cell[0][10].value}

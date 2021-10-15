@@ -8,6 +8,7 @@ from asapy.parse.pgmpy.NounStructure_pgmpy import NounStructure
 import pprint
 import pickle
 import os
+import openpyxl
 
 from pgmpy.inference import VariableElimination
 
@@ -22,7 +23,11 @@ class Sematter():
         self.calc = Calculate(frames)
         self.adjunct = Adjunct()
         self.nounstruct = NounStructure(nouns, frames)
-        self.ve = self.__getModel()
+        self.model = self.__getModel()
+        self.ve = self.__getVe()
+        self.sheet = self.__getSheet("filepath")
+        self.roles = self.__getRoles()
+        #self.esti = self.__esti_role_sem()
 
     def __getModel(self):
         #jsonバージョンは model_json.pickle
@@ -30,16 +35,77 @@ class Sematter():
         #file = os.path.abspath('/home/ooka/study/python_asa/utils/model_pth.pickle')
         file = '../utils/model_pth.pickle'
         with open(file, mode='rb') as f:
-            model = pickle.load(f)   
-        ve = VariableElimination(model)   
+            model = pickle.load(f) 
+        #print(model.get_cpds())
+
+        #cpd = model.get_cpds('role')
+        #print(cpd)
+        # for cpd in model.get_cpds():
+        #     #print("CPD of {variable}:".format(variable=cpd.variable))
+        #     print(cpd.variables)
+        #     print(cpd.cardinality)
+        return model  
+    
+    def __getVe(self):
+        ve = VariableElimination(self.model)
         return ve
+
+    def __getSheet(self, filepath:str):
+        wb = openpyxl.load_workbook('data/pth20210305.xlsx')
+        sheet = wb['pth20210305-sjis']
+        return sheet
+
+    def __getRoles(self):
+        roles = []
+        lastrow = self.sheet.max_row
+        myRoles = [self.sheet['E2:E' + str(lastrow)],self.sheet['L2:L' + str(lastrow)],self.sheet['S2:S' + str(lastrow)],self.sheet['Z2:Z' + str(lastrow)],self.sheet['AG2:AG' + str(lastrow)]]
+        for myRenges in myRoles:
+            for rows in myRenges:
+                for cell in rows:
+                    if cell.value != None:
+                        if cell.value not in roles:
+                            roles.append(cell.value)
+        return roles
+
+    def __getSemantics(self,verb):
+        semantics = []
+        lastrow = self.sheet.max_row
+        myRenges = self.sheet['C2:C' + str(lastrow)]
+        for rows in myRenges:
+            semantic = ""
+            for cell in rows:
+                #print(cell.value)
+                if cell.value != None:
+                    if verb in cell.value:
+                        obj = "AO{}:AS{}".format(cell.row,cell.row)
+                        cells = self.sheet[obj]
+                        for row in cells:
+                            for frame in row:
+                                if frame.value == None:
+                                    semantic += "-"
+                                else:
+                                    semantic += "{}-".format(frame.value)
+                        semantics.append(semantic)
+        #print(semantics)
+        return semantics
+
+    def __esti_role_sem(self):
+        TODO
+        # for sem in sems[]: #DONE
+        #     for role in roles[]: #DONE
+        #         cpd = calc_cpd(evidence = sem:'///' ...) #このCPDが取れない 全部決まっているCPDが取れない。一つのnodeについてしか無理?。 #self.model
+        #         if cpd > cpd_old:
+        #             cpd_old = cpd #更新
+        #             sem , role = sem_cpd, role_cpd #maxの時のsem,roleをいれる
+        # return sem, role
 
     def parse(self, result: Result) -> None:
         verbchunks = self.__getSemChunks(result)
         for verbchunk in verbchunks:
+            semantics = self.__getSemantics(verbchunk.main)
             linkchunks = self.__getLinkChunks(verbchunk)
             self.__setAnotherPart(linkchunks)
-            self.calc_model(verbchunk,verbchunk.main,linkchunks) #ここでモデルの計算
+            self.calc_model(verbchunk,verbchunk.main,linkchunks, semantics) #ここでモデルの計算
             #frame = self.calc.getFrame(verbchunk.main, linkchunks)
             # if frame:
             #     semantic, similar, insts = frame
@@ -54,19 +120,28 @@ class Sematter():
         self.__setInversedSemantic(result)
         return result
 
-    def calc_model(self, verbchunk, verb, linkchunks):
+    def calc_model(self, verbchunk, verb, linkchunks, semantics): #予測
         for linkchunk in linkchunks:
             try:
                 estimate = self.ve.map_query(variables=['sem','role','arg'], evidence={'verb':verb,'pos':linkchunk.main,'rel':linkchunk.part,'voice':'*'})
                 self.__setAll(linkchunk, verbchunk , estimate)
                 #self.adjunct.parse(verbchunk.modifiedchunks)
             except KeyError:
-                self.adjunct.parse(verbchunk.modifiedchunks)
+                print("KEYERROR occured")
+                #self.adjunct.parse(verbchunk.modifiedchunks)
+                frame = self.calc.getFrame(verbchunk.main, linkchunks)
+                if frame:
+                    semantic, similar, insts = frame
+                    self.__setSemantic(semantic, similar, verbchunk)
+                    self.__setSemRole(insts)
+                    self.__setArg(insts)
+                    self.__setSpecialSemantic(verbchunk)
+                    self.adjunct.parse(verbchunk.modifiedchunks)
 
             #TODO try-exceptの処理の改善->精度の向上
 
     def __setAll(self, linkchunk, verbchunk, esti):
-        #print(esti['role'] + "|" + esti['arg'])
+        #print(esti['role'] + "|" + esti['arg']+ "|" + esti['sem'])
         if esti['role']:
             linkchunk.semrole.append(esti['role'])
         if esti['arg']:
