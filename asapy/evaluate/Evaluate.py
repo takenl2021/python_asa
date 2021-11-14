@@ -8,15 +8,16 @@ class Evaluate():
     def __init__(self) -> None:
         self.number = 24130
         self.data = self.__openSheet()
-        self.SemanticCount = {'true': 0, 'false' :0, 'falsePositive' : 0}
-        self.ArgCount = {'true': 0, 'false' : 0, 'falsePositive' :0}
-        self.SemroleCount = {'true': 0, 'false': 0, 'falsePositive' :0}
+        self.SemanticCount = {'true': 0, 'falsePositive' :0, 'falseNegative' : 0}
+        self.ArgCount = {'true': 0, 'falsePositive' : 0, 'falseNegative' :0}
+        self.SemroleCount = {'true': 0, 'falsePositive': 0, 'falseNegative' :0}
         self.asa = ASA()
 
     def calculate(self):
         #for i in range(2,24130):
         #10360あたりのデータが壊れている
         for i in range(2,self.number):
+            print(i)
             correct_json = {'correct':[]}
             values = self.returnValue(i)
             if values['sentence'] == None:
@@ -82,72 +83,85 @@ class Evaluate():
                 if chunk.arg[0] == values['case1']['Arg']:
                     self.ArgCount['true'] += 1
                 else:
-                    self.ArgCount['false'] += 1
+                    self.ArgCount['falsePositive'] += 1
                     correct_chunk['Arg'] = values['case1']['Arg']
-                    correct_chunk['surface'] = values['case1']['surface']
-                if chunk.semrole[0] == values['case1']['semrole']:
-                    self.SemroleCount['true'] += 1
-                else:
-                    self.SemroleCount['false'] += 1
-                    correct_chunk['semrole'] = values['case1']['semrole']
                     correct_chunk['surface'] = values['case1']['surface']
             elif chunk.surface in values['case2'].values():
                 if chunk.arg[0] == values['case2']['Arg']:
                     self.ArgCount['true'] += 1
                 else:
-                    self.ArgCount['false'] += 1
+                    self.ArgCount['falsePositive'] += 1
                     correct_chunk['Arg'] = values['case2']['Arg']
-                    correct_chunk['surface'] = values['case2']['surface']
-                if chunk.semrole[0] == values['case2']['semrole']:
-                    self.SemroleCount['true'] += 1
-                else:
-                    self.SemroleCount['false'] += 1
-                    correct_chunk['semrole'] = values['case2']['semrole']
                     correct_chunk['surface'] = values['case2']['surface']
             elif chunk.surface in values['case3'].values():
                 if chunk.arg[0] == values['case3']['Arg']:
                     self.ArgCount['true'] += 1
                 else:
-                    self.ArgCount['false'] += 1
+                    self.ArgCount['falsePositive'] += 1
                     correct_chunk['Arg'] = values['case3']['Arg']
-                    correct_chunk['surface'] = values['case3']['surface']
-                if chunk.semrole[0] == values['case3']['semrole']:
-                    self.SemroleCount['true'] += 1
-                else:
-                    self.SemroleCount['false'] += 1
-                    correct_chunk['semrole'] = values['case3']['semrole']
                     correct_chunk['surface'] = values['case3']['surface']
             elif chunk.surface in values['case4'].values():
                 if chunk.arg[0] == values['case4']['Arg']:
                     self.ArgCount['true'] += 1
                 else:
-                    self.ArgCount['false'] += 1
+                    self.ArgCount['falsePositive'] += 1
                     correct_chunk['Arg'] = values['case4']['Arg']
-                    correct_chunk['surface'] = values['case4']['surface']
-                if chunk.semrole[0] == values['case4']['semrole']:
-                    self.SemroleCount['true'] += 1
-                else:
-                    self.SemroleCount['false'] += 1
-                    correct_chunk['semrole'] = values['case4']['semrole']
                     correct_chunk['surface'] = values['case4']['surface']
             elif chunk.surface in values['case5'].values():
                 if chunk.arg[0] == values['case5']['Arg']:
                     self.ArgCount['true'] += 1
                 else:
-                    self.ArgCount['false'] += 1
+                    self.ArgCount['falsePositive'] += 1
                     correct_chunk['Arg'] = values['case5']['Arg']
-                    correct_chunk['surface'] = values['case5']['surface']
-                if chunk.semrole[0] == values['case5']['semrole']:
-                    self.SemroleCount['true'] += 1
-                else:
-                    self.SemroleCount['false'] += 1
-                    correct_chunk['semrole'] = values['case5']['semrole']
                     correct_chunk['surface'] = values['case5']['surface']
             else:
                 #print("Argはあるけど正しく振られてない(fp)") #tp = FALSE retrieved = TRUE,FALSE
                 self.ArgCount['falsePositive'] += 1
-        #else:
-            #print("Argが振られていない=(fn)")
+        else:
+            self.ArgCount['falseNegative'] += 1
+
+        if chunk.semrole:
+            if chunk.surface in values['case1'].values():
+                if chunk.semrole[0] == values['case1']['semrole']:
+                    self.SemroleCount['true'] += 1
+                else:
+                    self.SemroleCount['falsePositive'] += 1
+                    correct_chunk['semrole'] = values['case1']['semrole']
+                    correct_chunk['surface'] = values['case1']['surface']
+            elif chunk.surface in values['case2'].values():
+                if chunk.semrole[0] == values['case2']['semrole']:
+                    self.SemroleCount['true'] += 1
+                else:
+                    self.SemroleCount['falsePositive'] += 1
+                    correct_chunk['semrole'] = values['case2']['semrole']
+                    correct_chunk['surface'] = values['case2']['surface']
+            elif chunk.surface in values['case3'].values():
+                if chunk.semrole[0] == values['case3']['semrole']:
+                    self.SemroleCount['true'] += 1
+                else:
+                    self.SemroleCount['falsePositive'] += 1
+                    correct_chunk['semrole'] = values['case3']['semrole']
+                    correct_chunk['surface'] = values['case3']['surface']
+            elif chunk.surface in values['case4'].values():
+                if chunk.semrole[0] == values['case4']['semrole']:
+                    self.SemroleCount['true'] += 1
+                else:
+                    self.SemroleCount['falsePositive'] += 1
+                    correct_chunk['semrole'] = values['case4']['semrole']
+                    correct_chunk['surface'] = values['case4']['surface']
+            elif chunk.surface in values['case5'].values():
+                if chunk.semrole[0] == values['case5']['semrole']:
+                    self.SemroleCount['true'] += 1
+                else:
+                    self.SemroleCount['falsePositive'] += 1
+                    correct_chunk['semrole'] = values['case5']['semrole']
+                    correct_chunk['surface'] = values['case5']['surface']
+            else:
+                #print("Semはあるけど正しく振られてない(fp)") #tp = FALSE retrieved = TRUE,FALSE
+                self.SemroleCount['falsePositive'] += 1
+        else:
+            self.SemroleCount['falseNegative'] += 1
+        
         return correct_chunk
 
     def compareVerb(self, chunk, values):
@@ -170,14 +184,15 @@ class Evaluate():
                     if chunk.semantic == semantic:
                         self.SemanticCount['true'] += 1
                     else:
-                        self.SemanticCount['false'] += 1
+                        self.SemanticCount['falsePositive'] += 1
                         correct_chunk['semantic'] = semantic
                 else:
-                    self.SemanticCount['falsePositive'] += 1
-            else:
-                self.SemanticCount['falsePositive'] += 1
-                correct_chunk['verb_main'] = values['verb']['verb_main']
-                correct_chunk['verb_read'] = values['verb']['verb_read']
+                    self.SemanticCount['falseNegative'] += 1
+            #else:
+                ###解析の間違い？
+                #self.SemanticCount['falseNegative'] += 1
+                #correct_chunk['verb_main'] = values['verb']['verb_main']
+                #correct_chunk['verb_read'] = values['verb']['verb_read']
 
         return correct_chunk
 
@@ -200,41 +215,45 @@ class Evaluate():
 # F-value = 2*precision*recall /(precision + recall)  https://www.cse.kyoto-su.ac.jp/~g0846020/keywords/tpfptnfn.html
 
     def calculate_value(self):
-        Semantic_precision = self.SemanticCount['true'] / (self.SemanticCount['true'] + self.SemanticCount['false'])
-        Semantic_recall = self.SemanticCount['true'] / (self.SemanticCount['true'] + self.SemanticCount['falsePositive'])
+        Semantic_precision = self.SemanticCount['true'] / (self.SemanticCount['true'] + self.SemanticCount['falsePositive'])
+        Semantic_recall = self.SemanticCount['true'] / (self.SemanticCount['true'] + self.SemanticCount['falseNegative'])
         Semantic_F_value = 2 * Semantic_precision * Semantic_recall / (Semantic_precision + Semantic_recall)
-        Semrole_precision = self.SemroleCount['true'] / (self.SemroleCount['true'] + self.SemroleCount['false'])
-        Semrole_recall = self.SemroleCount['true'] / (self.SemroleCount['true'] + self.SemroleCount['falsePositive'])
+        Semrole_precision = self.SemroleCount['true'] / (self.SemroleCount['true'] + self.SemroleCount['falsePositive'])
+        Semrole_recall = self.SemroleCount['true'] / (self.SemroleCount['true'] + self.SemroleCount['falseNegative'])
         Semrole_F_value = 2 * Semrole_precision * Semrole_recall / (Semrole_precision + Semrole_recall)
-        Arg_precision = self.ArgCount['true'] / (self.ArgCount['true'] + self.ArgCount['false'])
-        Arg_recall = self.ArgCount['true'] / (self.ArgCount['true'] + self.ArgCount['falsePositive'])
+        Arg_precision = self.ArgCount['true'] / (self.ArgCount['true'] + self.ArgCount['falsePositive'])
+        Arg_recall = self.ArgCount['true'] / (self.ArgCount['true'] + self.ArgCount['falseNegative'])
         Arg_F_value = 2 * Arg_precision * Arg_recall / (Arg_precision + Arg_recall)
         return {"precision": {"semantic":Semantic_precision,"semrole":Semrole_precision,"arg":Arg_precision}, "recall": {"semantic":Semantic_recall,"semrole":Semrole_recall,"arg":Arg_recall}, "F_value":{"semantic":Semantic_F_value,"semrole":Semrole_F_value,"arg":Arg_F_value}}
 
     def outputResult(self,calc_values):
-        print("全語義: " + str(self.SemanticCount['true'] + self.SemanticCount['false'] + self.SemanticCount['falsePositive']))
+        print("全語義: " + str(self.SemanticCount['true'] + self.SemanticCount['falsePositive'] + self.SemanticCount['falseNegative']))
         print(" 語義の一致: " + str(self.SemanticCount["true"]))
-        print(" 語義の不一致: " + str(self.SemanticCount["false"]))
-        print(" 取れなかった動詞: " + str(self.SemanticCount["falsePositive"]))
+        print(" 語義の不一致: " + str(self.SemanticCount["falsePositive"]))
+        print(" 取れなかった動詞: " + str(self.SemanticCount["falseNegative"]))
         print("Semantic_precision\t" + str(calc_values['precision']['semantic'] * 100) + "%")
         print("Semantic_recall\t" + str(calc_values['recall']['semantic'] * 100) + "%")
         print("Semantic_F_value\t" , calc_values['F_value']['semantic'] * 100 , "%")
         print()
-        print("全意味役割: " + str(self.SemroleCount['true'] + self.SemroleCount['false'] + self.SemroleCount['falsePositive']))
+        print("全意味役割: " + str(self.SemroleCount['true'] + self.SemroleCount['falsePositive'] + self.SemroleCount['falseNegative']))
         print(" 意味役割の一致: " + str(self.SemroleCount["true"]))
-        print(" 意味役割の不一致: " + str(self.SemroleCount["false"]))
-        print(" 取れなかったchunk: " + str(self.SemroleCount["falsePositive"]))
+        print(" 意味役割の不一致: " + str(self.SemroleCount["falsePositive"]))
+        print(" 取れなかったchunk: " + str(self.SemroleCount["falseNegative"]))
         print("Semrole_presicion\t" + str(calc_values['precision']['semrole'] * 100) + "%")
         print("Semrole_recall\t" + str(calc_values['recall']['semrole'] * 100) + "%")
         print("Semrole_F_value\t" , calc_values['F_value']['semrole'] * 100 , "%")
         print()
-        print("全Arg: " + str(self.ArgCount['true'] + self.ArgCount['false'] + self.ArgCount['falsePositive']))
+        print("全Arg: " + str(self.ArgCount['true'] + self.ArgCount['falsePositive'] + self.ArgCount['falseNegative']))
         print(" Argの一致: " + str(self.ArgCount["true"]))
-        print(" Argの不一致: " + str(self.ArgCount["false"]))
-        print(" 取れなかったArg: " + str(self.ArgCount["falsePositive"]))
+        print(" Argの不一致: " + str(self.ArgCount["falsePositive"]))
+        print(" 取れなかったArg: " + str(self.ArgCount["falseNegative"]))
         print("Arg_presicion\t" + str(calc_values['precision']['arg'] * 100) + "%")
         print("Arg_recall\t" + str(calc_values['recall']['arg'] * 100) + "%")
         print("Arg_F_value\t" , calc_values['F_value']['arg'] * 100 , "%")
+        print()
+        print("Semantic" + str(self.SemanticCount))
+        print("Semrole" + str(self.SemroleCount))
+        print("Arg" + str(self.ArgCount))
 
     def outputJsonfile(self,correct_json, result_json, filename):
             emptyList = [result_json, correct_json]

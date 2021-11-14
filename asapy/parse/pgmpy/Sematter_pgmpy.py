@@ -23,31 +23,30 @@ class Sematter():
         self.calc = Calculate(frames)
         self.adjunct = Adjunct()
         self.nounstruct = NounStructure(nouns, frames)
-        self.model = self.__getModel()
-        self.ve = self.__getVe()
-        self.sheet = self.__getSheet("filepath")
-        self.roles = self.__getRoles()
+        self.model = self.__getModel('../utils/model_pth.pickle')
+        self.ve_role = self.__getVe_role('../utils/model_pth_role.pickle')
+        self.ve_arg = self.__getVe_role('../utils/model_pth_arg.pickle')
+        #self.sheet = self.__getSheet("filepath")
+        #self.roles = self.__getRoles()
         #self.esti = self.__esti_role_sem()
 
-    def __getModel(self):
+    def __getModel(self , filepath):
         #jsonバージョンは model_json.pickle
         #file = os.path.abspath('/home/ooka/study/python_asa/utils/model_json.pickle')
         #file = os.path.abspath('/home/ooka/study/python_asa/utils/model_pth.pickle')
-        file = '../utils/model_pth.pickle'
-        with open(file, mode='rb') as f:
+        #file = '../utils/model_pth.pickle'
+        with open(filepath, mode='rb') as f:
             model = pickle.load(f) 
-        #print(model.get_cpds())
-
-        #cpd = model.get_cpds('role')
-        #print(cpd)
-        # for cpd in model.get_cpds():
-        #     #print("CPD of {variable}:".format(variable=cpd.variable))
-        #     print(cpd.variables)
-        #     print(cpd.cardinality)
-        return model  
+        return model
     
-    def __getVe(self):
-        ve = VariableElimination(self.model)
+    def __getVe_role(self, filepath):
+        model = self.__getModel(filepath)
+        ve = VariableElimination(model)
+        return ve
+    
+    def __getVe_arg(self, filepath):
+        model = self.__getModel(filepth)
+        ve = VariableElimination(model)
         return ve
 
     def __getSheet(self, filepath:str):
@@ -89,11 +88,12 @@ class Sematter():
         #print(semantics)
         return semantics
 
-    def __esti_role_sem(self):
+    def __esti_role_sem(self , semantics, roles):
         TODO
-        # for sem in sems[]: #DONE
+        # for sem in semantics[]: #DONE
         #     for role in roles[]: #DONE
-        #         cpd = calc_cpd(evidence = sem:'///' ...) #このCPDが取れない 全部決まっているCPDが取れない。一つのnodeについてしか無理?。 #self.model
+        #         cpd = calc_cpd(evidence = sem:'///' ...) #このCPDが取れない 全部決まっているCPDが取れない。一つのnodeについてしか無理?。
+        #           self.model.get_cpds('sem')
         #         if cpd > cpd_old:
         #             cpd_old = cpd #更新
         #             sem , role = sem_cpd, role_cpd #maxの時のsem,roleをいれる
@@ -102,10 +102,10 @@ class Sematter():
     def parse(self, result: Result) -> None:
         verbchunks = self.__getSemChunks(result)
         for verbchunk in verbchunks:
-            semantics = self.__getSemantics(verbchunk.main)
+            #semantics = self.__getSemantics(verbchunk.main)
             linkchunks = self.__getLinkChunks(verbchunk)
             self.__setAnotherPart(linkchunks)
-            self.calc_model(verbchunk,verbchunk.main,linkchunks, semantics) #ここでモデルの計算
+            self.calc_model(verbchunk,verbchunk.main,linkchunks, result) #ここでモデルの計算
             #frame = self.calc.getFrame(verbchunk.main, linkchunks)
             # if frame:
             #     semantic, similar, insts = frame
@@ -120,35 +120,38 @@ class Sematter():
         self.__setInversedSemantic(result)
         return result
 
-    def calc_model(self, verbchunk, verb, linkchunks, semantics): #予測
+    def calc_model(self, verbchunk, verb, linkchunks, result): #予測
         for linkchunk in linkchunks:
             try:
-                estimate = self.ve.map_query(variables=['sem','role','arg'], evidence={'verb':verb,'pos':linkchunk.main,'rel':linkchunk.part,'voice':'*'})
-                self.__setAll(linkchunk, verbchunk , estimate)
+                #estimate = self.ve.map_query(variables=['sem','role','arg'], evidence={'verb':verb,'pos':linkchunk.main,'rel':linkchunk.part,'voice':'*'})
+                estimate_role = self.ve_role.map_query(variables=['sem','role'], evidence={'verb':verb,'surface': linkchunk.main, 'pos':linkchunk.morphs[0].pos,'rel':linkchunk.part,'voice':'*'})
+                estimate_arg = self.ve_arg.map_query(variables=['sem','arg'], evidence={'verb':verb,'surface': linkchunk.main, 'pos':linkchunk.morphs[0].pos,'rel':linkchunk.part,'voice':'*'})
+                self.__setRole_estimate(linkchunk, verbchunk , estimate_role)
+                self.__setArg_estimate(linkchunk, estimate_arg)
                 #self.adjunct.parse(verbchunk.modifiedchunks)
-            except KeyError:
-                print("KEYERROR occured")
+            except :
+                print("ERROR occured")
                 #self.adjunct.parse(verbchunk.modifiedchunks)
-                frame = self.calc.getFrame(verbchunk.main, linkchunks)
-                if frame:
-                    semantic, similar, insts = frame
-                    self.__setSemantic(semantic, similar, verbchunk)
-                    self.__setSemRole(insts)
-                    self.__setArg(insts)
-                    self.__setSpecialSemantic(verbchunk)
-                    self.adjunct.parse(verbchunk.modifiedchunks)
+                # frame = self.calc.getFrame(verbchunk.main, linkchunks)
+                # if frame:
+                #     semantic, similar, insts = frame
+                #     self.__setSemantic(semantic, similar, verbchunk)
+                #     self.__setSemRole(insts)
+                #     self.__setArg(insts)
+                #     self.__setSpecialSemantic(verbchunk)
+                #     self.adjunct.parse(verbchunk.modifiedchunks)
 
             #TODO try-exceptの処理の改善->精度の向上
 
-    def __setAll(self, linkchunk, verbchunk, esti):
-        #print(esti['role'] + "|" + esti['arg']+ "|" + esti['sem'])
+    def __setRole_estimate(self, linkchunk, verbchunk, esti):
         if esti['role']:
             linkchunk.semrole.append(esti['role'])
-        if esti['arg']:
-            linkchunk.arg.append(esti['arg'])
         if esti['sem']:
             verbchunk.semantic = esti['sem']
-
+    
+    def __setArg_estimate(self, linkchunk, esti):
+        if esti['arg']:
+            linkchunk.arg.append(esti['arg'])
     #
     # 係り先である節を取得
     #
