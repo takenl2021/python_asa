@@ -29,18 +29,18 @@ class Sematter():
         self.sheet = self.__getSheet("filepath")
         self.model_role = self.model = self.__getModel('../utils/model_pth_role.pickle')
         self.model_arg = self.model = self.__getModel('../utils/model_pth_arg.pickle')
-        self.cpd_surface = self.model_role.get_cpds('surface')
-        self.cpd_pos = self.model_role.get_cpds('pos')
-        self.cpd_rel = self.model_role.get_cpds('rel')
-        self.cpd_sem = self.model_role.get_cpds('sem')
-        self.cpd_role = self.model_role.get_cpds('role')
-        self.cpd_verb = self.model_role.get_cpds('verb')
-        self.cpd_arg = self.model_arg.get_cpds('arg')
-        self.cpd_arg_surface = self.model_arg.get_cpds('surface')
-        self.cpd_arg_pos = self.model_arg.get_cpds('pos')
-        self.cpd_arg_rel = self.model_arg.get_cpds('rel')
-        self.cpd_arg_sem = self.model_arg.get_cpds('sem')
-        self.cpd_arg_verb = self.model_arg.get_cpds('verb')
+        # self.cpd_surface = self.model_role.get_cpds('surface')
+        # self.cpd_pos = self.model_role.get_cpds('pos')
+        # self.cpd_rel = self.model_role.get_cpds('rel')
+        # self.cpd_sem = self.model_role.get_cpds('sem')
+        # self.cpd_role = self.model_role.get_cpds('role')
+        # self.cpd_verb = self.model_role.get_cpds('verb')
+        # self.cpd_arg = self.model_arg.get_cpds('arg')
+        # self.cpd_arg_surface = self.model_arg.get_cpds('surface')
+        # self.cpd_arg_pos = self.model_arg.get_cpds('pos')
+        # self.cpd_arg_rel = self.model_arg.get_cpds('rel')
+        # self.cpd_arg_sem = self.model_arg.get_cpds('sem')
+        # self.cpd_arg_verb = self.model_arg.get_cpds('verb')
         #self.cpd_voice = self.model.get_cpds('voice')
 
     def __getModel(self , filepath):
@@ -137,11 +137,11 @@ class Sematter():
     def parse(self, result: Result) -> None:
         verbchunks = self.__getSemChunks(result)
         for verbchunk in verbchunks:
-            semantics = self.__getSemantics(verbchunk.main)
+            #semantics = self.__getSemantics(verbchunk.main)
             linkchunks = self.__getLinkChunks(verbchunk)
             self.__setAnotherPart(linkchunks)
-            self.__esti_role_sem(verbchunk, linkchunks, semantics) #CPDの計算
-            #self.calc_model(verbchunk,verbchunk.main,linkchunks, result) #VariableElimination
+            #self.__esti_role_sem(verbchunk, linkchunks, semantics) #CPDの計算
+            self.calc_model(verbchunk,verbchunk.main,linkchunks, result) #VariableElimination
             #frame = self.calc.getFrame(verbchunk.main, linkchunks)
             # if frame:
             #     semantic, similar, insts = frame
