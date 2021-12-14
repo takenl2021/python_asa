@@ -41,7 +41,6 @@ class Sematter():
         self.cpd_arg_rel = self.model_arg.get_cpds('rel')
         self.cpd_arg_sem = self.model_arg.get_cpds('sem')
         self.cpd_arg_verb = self.model_arg.get_cpds('verb')
-        #self.cpd_voice = self.model.get_cpds('voice')
 
     def __getModel(self , filepath):
         #jsonバージョンは model_json.pickle
@@ -85,9 +84,8 @@ class Sematter():
                                     semantic += "-"
                                 else:
                                     semantic += "{}-".format(frame.value)
-                        if semantic != "-----":
-                            semantics.append(semantic)
-        #print(semantics)
+                        semantics.append(semantic)
+        print(semantics)
         return semantics
 
     def __esti_role_sem(self , verbchunk, linkchunks, semantics):
@@ -133,15 +131,14 @@ class Sematter():
         verbchunk.semantic = self.cpd_role.state_names['sem'][indexs["sem"]]
         linkchunk.arg.append(self.cpd_arg.state_names['arg'][indexs["arg"]])
 
-
     def parse(self, result: Result) -> None:
         verbchunks = self.__getSemChunks(result)
         for verbchunk in verbchunks:
             semantics = self.__getSemantics(verbchunk.main)
             linkchunks = self.__getLinkChunks(verbchunk)
             self.__setAnotherPart(linkchunks)
-            self.__esti_role_sem(verbchunk, linkchunks, semantics) #CPDの計算
-            #self.calc_model(verbchunk,verbchunk.main,linkchunks, result) #VariableElimination
+            self.__esti_role_sem(linkchunks, verbchunk, semantics)
+            #self.calc_model(verbchunk,verbchunk.main,linkchunks, result) #ここでモデルの計算
             #frame = self.calc.getFrame(verbchunk.main, linkchunks)
             # if frame:
             #     semantic, similar, insts = frame
