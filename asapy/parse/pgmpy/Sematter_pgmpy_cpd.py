@@ -91,6 +91,7 @@ class Sematter():
     def __esti_role_sem(self , verbchunk, linkchunks, semantics):
         semantic_indexs = []
         for linkchunk in linkchunks:
+            indexs == None
             cpd = -1000
             if linkchunk.morphs[0].pos in self.cpd_pos.state_names['pos']:
                 pos_index = self.cpd_pos.state_names['pos'].index(linkchunk.morphs[0].pos)
@@ -107,7 +108,7 @@ class Sematter():
             if verbchunk.main in self.cpd_rel.state_names['verb']:
                 verb_index = self.cpd_rel.state_names['verb'].index(verbchunk.main)
             else:
-                vreb_index = None
+                verb_index = None
             for semantic in semantics:
                 semantic_indexs.append(self.cpd_sem.state_names['sem'].index(semantic))
 
@@ -127,6 +128,8 @@ class Sematter():
             self.__setAll(indexs, linkchunk, verbchunk)
         
     def __setAll(self, indexs, linkchunk, verbchunk):
+        if indexs == None:
+            return
         linkchunk.semrole.append(self.cpd_role.state_names['role'][indexs["role"]])
         verbchunk.semantic = self.cpd_role.state_names['sem'][indexs["sem"]]
         linkchunk.arg.append(self.cpd_arg.state_names['arg'][indexs["arg"]])

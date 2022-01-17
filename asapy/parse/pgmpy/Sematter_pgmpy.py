@@ -5,7 +5,6 @@ from asapy.parse.pgmpy.Calculate_pgmpy import Calculate
 from asapy.parse.pgmpy.Adjunct_pgmpy import Adjunct
 from asapy.parse.pgmpy.NounStructure_pgmpy import NounStructure
 
-import pprint
 import pickle
 import os
 import openpyxl
@@ -23,31 +22,28 @@ class Sematter():
         self.calc = Calculate(frames)
         self.adjunct = Adjunct()
         self.nounstruct = NounStructure(nouns, frames)
-        self.model = self.__getModel('../utils/model_pth.pickle')
         self.ve_role = self.__getVe_role('../utils/model_pth_role.pickle')
         self.ve_arg = self.__getVe_role('../utils/model_pth_arg.pickle')
-        self.sheet = self.__getSheet("filepath")
-        self.model_role = self.model = self.__getModel('../utils/model_pth_role.pickle')
-        self.model_arg = self.model = self.__getModel('../utils/model_pth_arg.pickle')
+        # self.sheet = self.__getSheet("filepath")
+        # self.model_role = self.__getModel('../utils/model_pth_role.pickle')
+        # self.model_arg = self.__getModel('../utils/model_pth_arg.pickle')
         # self.cpd_surface = self.model_role.get_cpds('surface')
         # self.cpd_pos = self.model_role.get_cpds('pos')
         # self.cpd_rel = self.model_role.get_cpds('rel')
         # self.cpd_sem = self.model_role.get_cpds('sem')
         # self.cpd_role = self.model_role.get_cpds('role')
         # self.cpd_verb = self.model_role.get_cpds('verb')
+        # self.cpd_voice = self.model_role.get_cpds('voice')
         # self.cpd_arg = self.model_arg.get_cpds('arg')
         # self.cpd_arg_surface = self.model_arg.get_cpds('surface')
         # self.cpd_arg_pos = self.model_arg.get_cpds('pos')
         # self.cpd_arg_rel = self.model_arg.get_cpds('rel')
         # self.cpd_arg_sem = self.model_arg.get_cpds('sem')
         # self.cpd_arg_verb = self.model_arg.get_cpds('verb')
-        #self.cpd_voice = self.model.get_cpds('voice')
+        # self.cpd_voice = self.model_arg.get_cpds('voice')
 
     def __getModel(self , filepath):
         #jsonバージョンは model_json.pickle
-        #file = os.path.abspath('/home/ooka/study/python_asa/utils/model_json.pickle')
-        #file = os.path.abspath('/home/ooka/study/python_asa/utils/model_pth.pickle')
-        #file = '../utils/model_pth.pickle'
         with open(filepath, mode='rb') as f:
             model = pickle.load(f) 
         return model
@@ -74,7 +70,6 @@ class Sematter():
         for rows in myRenges:
             semantic = ""
             for cell in rows:
-                #print(cell.value)
                 if cell.value != None:
                     if verb in cell.value:
                         obj = "AO{}:AS{}".format(cell.row,cell.row)
@@ -87,12 +82,12 @@ class Sematter():
                                     semantic += "{}-".format(frame.value)
                         if semantic != "-----":
                             semantics.append(semantic)
-        #print(semantics)
         return semantics
 
     def __esti_role_sem(self , verbchunk, linkchunks, semantics):
         semantic_indexs = []
         for linkchunk in linkchunks:
+            indexs = None
             cpd = -1000
             if linkchunk.morphs[0].pos in self.cpd_pos.state_names['pos']:
                 pos_index = self.cpd_pos.state_names['pos'].index(linkchunk.morphs[0].pos)
@@ -109,26 +104,32 @@ class Sematter():
             if verbchunk.main in self.cpd_rel.state_names['verb']:
                 verb_index = self.cpd_rel.state_names['verb'].index(verbchunk.main)
             else:
-                vreb_index = None
+                verb_index = None
+            if verbchunk.voice in self.cpd_rel.state_names['voice']:
+                voice_index = self.cpd_rel.state_names['voice'].index(verbchunk.voice)
+            else:
+                voice_index = None
             for semantic in semantics:
                 semantic_indexs.append(self.cpd_sem.state_names['sem'].index(semantic))
 
             for i in range(len(self.cpd_role.values)):
                 for semantic_index in semantic_indexs:
-                    cpd_new = self.cpd_role.values[i][semantic_index] * (self.cpd_pos.values[pos_index][i] if pos_index != None else 1) * (self.cpd_surface.values[surface_index][i] if surface_index != None else 1)* (self.cpd_rel.values[rel_index][i] if rel_index != None else 1) * (self.cpd_verb.values[verb_index][i] if verb_index != None else 1)
+                    cpd_new = self.cpd_role.values[i][semantic_index] * (self.cpd_pos.values[pos_index][i] if pos_index != None else 1) * (self.cpd_surface.values[surface_index][i] if surface_index != None else 1)* (self.cpd_rel.values[rel_index][i] if rel_index != None else 1) * (self.cpd_verb.values[verb_index][i] if verb_index != None else 1) * (self.cpd_voice.values[voice_index][i] if voice_index != None else 1)
                     if cpd_new > cpd:
                         cpd = cpd_new
                         indexs = {"sem": semantic_index, "role": i}
             cpd = -1000
             for i in range(len(self.cpd_arg.values)):
                 for semantic_index in semantic_indexs:
-                    cpd_new = self.cpd_arg.values[i][semantic_index] * (self.cpd_arg_pos.values[pos_index][i] if pos_index != None else 1) * (self.cpd_arg_surface.values[surface_index][i] if surface_index != None else 1)* (self.cpd_arg_rel.values[rel_index][i] if rel_index != None else 1) * (self.cpd_arg_verb.values[verb_index][i] if verb_index != None else 1)
+                    cpd_new = self.cpd_arg.values[i][semantic_index] * (self.cpd_arg_pos.values[pos_index][i] if pos_index != None else 1) * (self.cpd_arg_surface.values[surface_index][i] if surface_index != None else 1)* (self.cpd_arg_rel.values[rel_index][i] if rel_index != None else 1) * (self.cpd_arg_verb.values[verb_index][i] if verb_index != None else 1) * (self.cpd_voice.values[voice_index][i] if voice_index != None else 1)
                     if cpd_new > cpd:
                         cpd = cpd_new
                         indexs['arg'] = i
             self.__setAll(indexs, linkchunk, verbchunk)
         
     def __setAll(self, indexs, linkchunk, verbchunk):
+        if indexs == None:
+            return 
         linkchunk.semrole.append(self.cpd_role.state_names['role'][indexs["role"]])
         verbchunk.semantic = self.cpd_role.state_names['sem'][indexs["sem"]]
         linkchunk.arg.append(self.cpd_arg.state_names['arg'][indexs["arg"]])
@@ -150,17 +151,17 @@ class Sematter():
             #     self.__setArg(insts)
             #     self.__setSpecialSemantic(verbchunk)
             #     self.adjunct.parse(verbchunk.modifiedchunks)
-        nounchunks = self.__getNounChunks(result)
-        for nounchunk in nounchunks:
-            self.nounstruct.parse(nounchunk)
-        self.__setInversedSemantic(result)
+        # nounchunks = self.__getNounChunks(result)
+        # for nounchunk in nounchunks:
+        #     self.nounstruct.parse(nounchunk)
+        # self.__setInversedSemantic(result)
         return result
 
     def calc_model(self, verbchunk, verb, linkchunks, result): #予測
         for linkchunk in linkchunks:
             try:
-                estimate_role = self.ve_role.map_query(variables=['sem','role'], evidence={'verb':verb,'surface': linkchunk.main, 'pos':linkchunk.morphs[0].pos,'rel':linkchunk.part,'voice':'*'})
-                estimate_arg = self.ve_arg.map_query(variables=['sem','arg'], evidence={'verb':verb,'surface': linkchunk.main, 'pos':linkchunk.morphs[0].pos,'rel':linkchunk.part,'voice':'*'})
+                estimate_role = self.ve_role.map_query(variables=['sem','role'], evidence={'verb':verb,'surface': linkchunk.main, 'pos':linkchunk.morphs[0].pos,'rel':linkchunk.part,'voice':verbchunk.voice})
+                estimate_arg = self.ve_arg.map_query(variables=['sem','arg'], evidence={'verb':verb,'surface': linkchunk.main, 'pos':linkchunk.morphs[0].pos,'rel':linkchunk.part,'voice':verbchunk.voice})
                 self.__setRole_estimate(linkchunk, verbchunk , estimate_role)
                 self.__setArg_estimate(linkchunk, estimate_arg)
                 #self.adjunct.parse(verbchunk.modifiedchunks)
@@ -191,7 +192,8 @@ class Sematter():
     # 係り先である節を取得
     #
     def __getSemChunks(self, result: Result) -> list:
-        chunks = [c for c in result.chunks if c.ctype != 'elem' and self.frames.isFrame(c.main)]
+        # chunks = [c for c in result.chunks if c.ctype != 'elem' and self.frames.isFrame(c.main)]
+        chunks = [c for c in result.chunks if c.ctype != 'elem']
         return chunks
 
     #

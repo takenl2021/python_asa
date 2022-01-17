@@ -2,21 +2,23 @@ from asapy.result.Result import Result
 import openpyxl
 import json
 from ASA import ASA
+import time
 
 class Evaluate():
 
     def __init__(self) -> None:
         self.number = 24130
-        self.data = self.__openSheet()
+        self.sheet = self.__openSheet()
         self.SemanticCount = {'true': 0, 'falsePositive' :0, 'falseNegative' : 0}
         self.ArgCount = {'true': 0, 'falsePositive' : 0, 'falseNegative' :0}
         self.SemroleCount = {'true': 0, 'falsePositive': 0, 'falseNegative' :0}
         self.asa = ASA()
 
     def calculate(self):
+        print("20000万件実行中")
         #for i in range(2,24130):
         #10360あたりのデータが壊れている
-        for i in range(2,self.number):
+        for i in range(2,self.number): #2~24130
             print(i)
             correct_json = {'correct':[]}
             values = self.returnValue(i)
@@ -30,10 +32,10 @@ class Evaluate():
                     correct_chunk = self.chunkType(chunk, values)
                     if correct_chunk != {}:
                         correct_json['correct'].append(correct_chunk)
-                # if correct_json['correct'] != []:
-                #     result_json = self.outputJson(result)
-                #     filename =  "diff/example_{}.json".format(i-1)
-                #     self.outputJsonfile(correct_json, result_json,filename)
+                    if correct_json['correct'] != []:
+                        result_json = self.outputJson(result)
+                        filename =  "diff/example_{}.json".format(i-1)
+                        self.outputJsonfile(correct_json, result_json,filename)
         calc_values = self.calculate_value()
         self.outputResult(calc_values)
 
@@ -45,7 +47,7 @@ class Evaluate():
 
     def returnValue(self, id):
         obj = "A{}:BB{}".format(id,id)
-        cell = self.data[obj]
+        cell = self.sheet[obj]
         sentence = cell[0][39].value
         verb = {"verb_main":cell[0][2].value,"verb_read":cell[0][3].value}
         case1 = {"semrole":cell[0][4].value,"Arg":cell[0][5].value,"表層格":cell[0][6].value,"surface": cell[0][7].value,"格要素":cell[0][8].value,"フレーム変数": cell[0][9].value,"Filled": cell[0][10].value}
@@ -56,7 +58,6 @@ class Evaluate():
         semantic = {"1": cell[0][40].value, "2":cell[0][41].value,"3":cell[0][42].value,"4":cell[0][43].value,"5":cell[0][44].value}
         value = {"verb":verb, "sentence":sentence,"semantic":semantic, "case1":case1, "case2":case2, "case3":case3, "case4":case4, "case5":case5,}
         return value
-
 
             #深層系 = semrole
             #格1 = 4~10
@@ -71,7 +72,7 @@ class Evaluate():
         if chunk.ctype == "elem":
             correct_chunk = self.compareElem(chunk, values)
         if chunk.ctype == "adjective":
-            self.adjective()
+            correct_chunk = self.adjective(chunk, values)
         if chunk.ctype == "verb":
             correct_chunk = self.compareVerb(chunk, values)
         return correct_chunk
@@ -177,7 +178,7 @@ class Evaluate():
         semantic = semantic[:-1]
         for morph in chunk.morphs:
             string_read += morph.read
-        
+
         if chunk.main:
             if chunk.main == values['verb']['verb_main'] and string_read == values['verb']['verb_read']:       
                 if chunk.semantic:
@@ -188,9 +189,10 @@ class Evaluate():
                         correct_chunk['semantic'] = semantic
                 else:
                     self.SemanticCount['falseNegative'] += 1
+                    correct_chunk['falseNegative'] = "FALSENEGATIVE"
             #else:
-                ###解析の間違い？
-                #self.SemanticCount['falseNegative'] += 1
+                #形態素解析のミス？
+                #self.SemanticCount['falsePositive'] += 1
                 #correct_chunk['verb_main'] = values['verb']['verb_main']
                 #correct_chunk['verb_read'] = values['verb']['verb_read']
 
@@ -206,8 +208,127 @@ class Evaluate():
                     value = {"Arg":case['Arg'],"surface":case["事例"],"semrole":case["深層格"],"part":case["表層格"],"tp":False}
                     return value
 
-    def adjective(self):
-        correct_chunk = {}
+    def adjective(self, chunk, values):
+        correct_chunk = {}        
+        string_read = ""
+        semantic = ""
+        
+        for frame in values['semantic'].values():
+            if frame == None:
+                semantic += "-"
+            else:
+                semantic += "{}-".format(frame)
+        semantic = semantic[:-1]
+        for morph in chunk.morphs:
+            string_read += morph.read
+
+        if chunk.semantic:
+            if chunk.main:
+                if chunk.main == values['verb']['verb_main'] and string_read == values['verb']['verb_read']:       
+                    if chunk.semantic == semantic:
+                        self.SemanticCount['true'] += 1
+                        return correct_chunk
+                    else:
+                        self.SemanticCount['falsePositive'] += 1
+                        correct_chunk['semantic'] = semantic
+                        return correct_chunk
+                else:
+                    self.SemanticCount['falseNegative'] += 1
+                    correct_chunk['falseNegative'] = "FALSENEGATIVE"
+                    return correct_chunk
+            else:
+                return correct_chunk
+                #形態素解析のミス？
+                #self.SemanticCount['falsePositive'] += 1
+                #correct_chunk['verb_main'] = values['verb']['verb_main']
+                #correct_chunk['verb_read'] = values['verb']['verb_read']
+
+        if chunk.arg:
+            if chunk.surface in values['case1'].values():
+                if chunk.arg[0] == values['case1']['Arg']:
+                    self.ArgCount['true'] += 1
+                else:
+                    self.ArgCount['falsePositive'] += 1
+                    correct_chunk['Arg'] = values['case1']['Arg']
+                    correct_chunk['surface'] = values['case1']['surface']
+            elif chunk.surface in values['case2'].values():
+                if chunk.arg[0] == values['case2']['Arg']:
+                    self.ArgCount['true'] += 1
+                else:
+                    self.ArgCount['falsePositive'] += 1
+                    correct_chunk['Arg'] = values['case2']['Arg']
+                    correct_chunk['surface'] = values['case2']['surface']
+            elif chunk.surface in values['case3'].values():
+                if chunk.arg[0] == values['case3']['Arg']:
+                    self.ArgCount['true'] += 1
+                else:
+                    self.ArgCount['falsePositive'] += 1
+                    correct_chunk['Arg'] = values['case3']['Arg']
+                    correct_chunk['surface'] = values['case3']['surface']
+            elif chunk.surface in values['case4'].values():
+                if chunk.arg[0] == values['case4']['Arg']:
+                    self.ArgCount['true'] += 1
+                else:
+                    self.ArgCount['falsePositive'] += 1
+                    correct_chunk['Arg'] = values['case4']['Arg']
+                    correct_chunk['surface'] = values['case4']['surface']
+            elif chunk.surface in values['case5'].values():
+                if chunk.arg[0] == values['case5']['Arg']:
+                    self.ArgCount['true'] += 1
+                else:
+                    self.ArgCount['falsePositive'] += 1
+                    correct_chunk['Arg'] = values['case5']['Arg']
+                    correct_chunk['surface'] = values['case5']['surface']
+            else:
+                #print("Argはあるけど正しく振られてない(fp)") #tp = FALSE retrieved = TRUE,FALSE
+                self.ArgCount['falsePositive'] += 1
+        else:
+            self.ArgCount['falseNegative'] += 1
+            correct_chunk['falseNegative'] = "FALSENEGATIVE"
+
+        if chunk.semrole:
+            if chunk.surface in values['case1'].values():
+                if chunk.semrole[0] == values['case1']['semrole']:
+                    self.SemroleCount['true'] += 1
+                else:
+                    self.SemroleCount['falsePositive'] += 1
+                    correct_chunk['semrole'] = values['case1']['semrole']
+                    correct_chunk['surface'] = values['case1']['surface']
+            elif chunk.surface in values['case2'].values():
+                if chunk.semrole[0] == values['case2']['semrole']:
+                    self.SemroleCount['true'] += 1
+                else:
+                    self.SemroleCount['falsePositive'] += 1
+                    correct_chunk['semrole'] = values['case2']['semrole']
+                    correct_chunk['surface'] = values['case2']['surface']
+            elif chunk.surface in values['case3'].values():
+                if chunk.semrole[0] == values['case3']['semrole']:
+                    self.SemroleCount['true'] += 1
+                else:
+                    self.SemroleCount['falsePositive'] += 1
+                    correct_chunk['semrole'] = values['case3']['semrole']
+                    correct_chunk['surface'] = values['case3']['surface']
+            elif chunk.surface in values['case4'].values():
+                if chunk.semrole[0] == values['case4']['semrole']:
+                    self.SemroleCount['true'] += 1
+                else:
+                    self.SemroleCount['falsePositive'] += 1
+                    correct_chunk['semrole'] = values['case4']['semrole']
+                    correct_chunk['surface'] = values['case4']['surface']
+            elif chunk.surface in values['case5'].values():
+                if chunk.semrole[0] == values['case5']['semrole']:
+                    self.SemroleCount['true'] += 1
+                else:
+                    self.SemroleCount['falsePositive'] += 1
+                    correct_chunk['semrole'] = values['case5']['semrole']
+                    correct_chunk['surface'] = values['case5']['surface']
+            else:
+                #print("Semはあるけど正しく振られてない(fp)") #tp = FALSE retrieved = TRUE,FALSE
+                self.SemroleCount['falsePositive'] += 1
+        else:
+            self.SemroleCount['falseNegative'] += 1
+            correct_chunk['falseNegative'] = "FALSENEGATIVE"
+
         return correct_chunk
 
 # precision適合率 = tp / (tp + fp) https://www.cse.kyoto-su.ac.jp/~g0846020/keywords/precision.html
@@ -215,6 +336,9 @@ class Evaluate():
 # F-value = 2*precision*recall /(precision + recall)  https://www.cse.kyoto-su.ac.jp/~g0846020/keywords/tpfptnfn.html
 
     def calculate_value(self):
+        print("Semantic" + str(self.SemanticCount))
+        print("Semrole" + str(self.SemroleCount))
+        print("Arg" + str(self.ArgCount))
         Semantic_precision = self.SemanticCount['true'] / (self.SemanticCount['true'] + self.SemanticCount['falsePositive'])
         Semantic_recall = self.SemanticCount['true'] / (self.SemanticCount['true'] + self.SemanticCount['falseNegative'])
         Semantic_F_value = 2 * Semantic_precision * Semantic_recall / (Semantic_precision + Semantic_recall)
@@ -313,28 +437,3 @@ class Evaluate():
                 chunk_dic['morphs'].append(morph_dic)
             result_json['chunks'].append(chunk_dic)
         return result_json
-
-
-# 全語義: 19793
-#  語義の一致: 17346
-#  語義の不一致: 2447
-#  取れなかった動詞: 530
-# Semantic_precision      87.63704339918152%
-# Semantic_recall 97.03513090176773%
-# Semantic_F_value         92.09694974647587 %
-
-# 全意味役割: 34849
-#  意味役割の一致: 30427
-#  意味役割の不一致: 4422
-#  取れなかったchunk: 0
-# Semrole_presicion       87.31097018565812%
-# Semrole_recall  100.0%
-# Semantic_F_value         93.22568784852012 %
-
-# 全Arg: 34849
-#  Argの一致: 26470
-#  Argの不一致: 8379
-#  取れなかったArg: 2046
-# Arg_presicion   75.956268472553%
-# Arg_recall      92.82508065647356%
-# Arg_F_value      83.54769983429338 %

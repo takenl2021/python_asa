@@ -44,14 +44,63 @@ def remove_part(surface,part):
     try:
         spliter = re.split('[・?]',part)
     except TypeError:
-        print(surface,part, pos)
+        print("TypeERROR",surface,part, pos)
         return surface, part , pos
     for split in spliter:
         if surface != surface.rstrip(split):
             surface = surface.rstrip(split)
             part = split
-    print(surface,part, pos)
+    #print(surface,part, pos)
     return surface , part , pos 
+
+    #partにNoneが出るけど問題なし Noneが出るのはArg-CMDとかの原因が振られているところ
+
+    #
+    # 文節態を解析し取得
+    # 付与する態
+    # - ACTIVE: 能動態
+    # - CAUSATIVE: 使役態
+    # - PASSIVE: 受動態
+    # - POTENTIAL: 可能態
+    #
+    
+def parseVoice(sentence):
+    parser = CaboCha.Parser()
+    voice = ""
+    pos = ""
+    if sentence:
+        tree =  parser.parse(sentence)
+        line_list = tree.toString(CaboCha.FORMAT_LATTICE).split("\n")
+        for line in line_list:
+            if line == "EOS":
+                break
+            if line.startswith("* "):
+                continue
+            else:
+
+                div1 = line.split("\t")
+                div2 = div1[1].split(",")
+                if div2[0] != "*":
+                    pos = pos + div2[0]
+                if div2[1] != "*":
+                    pos = pos + "," + div2[1]
+                if div2[2] != "*":
+                    pos = pos + "," + div2[2]
+                if div2[3] != "*":
+                    pos = pos + "," + div2[3]
+            #if re.search(r"れる|られる", div2[6]) and re.search(r"動詞,接尾", pos):
+            if (div2[6] == "れる" or div2[6] == "られる") and \
+                re.search(r"動詞,接尾", pos):
+                voice = "PASSIVE"
+            elif div2[6] == "できる" and re.search(r"動詞,自立", pos):
+                voice = "POTENTIAL"
+            elif (div2[6] in ["せる", "させる"] and re.search(r"動詞,接尾", pos)) or \
+                (div2[6] == "もらう" or div2[6] == "いただく") and \
+                re.search(r"動詞,非自立", pos):
+                voice = "CAUSATIVE"
+    if not voice:
+        voice = "ACTIVE"
+    return voice
 
 def makeModel_role(df):
     model = BayesianModel([('sem','role'),('sem','voice'),('sem','verb')
@@ -79,47 +128,38 @@ if __name__ == '__main__':
     for i in range(2,DATA_NUM): #2
         values = returnValue(i,sheet)
         semantic = ""
+        voice = ""
         for frame in values['semantic'].values():
             if frame == None:
                 semantic += "-"
             else:
                 semantic += "{}-".format(frame)
+        voice = parseVoice(values["sentence"]) 
         if values['sentence'] == None:
                 continue
         else:
             if values["case1"]["Arg"] != "false" and values["case1"]["Arg"] != None and values["case1"]["Arg"] != False:
                 surface , part , pos = remove_part(str(values["case1"]['surface']) if values["case1"]['surface'] != None else '*', values["case1"]['rel'])
-                df_role = df_role.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': '*', 'sem':semantic, 'role': values["case1"]["semrole"]}, ignore_index=True)
-                df_arg = df_arg.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': '*', 'sem':semantic, 'arg': values["case1"]["Arg"]}, ignore_index=True)
+                df_role = df_role.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'role': values["case1"]["semrole"]}, ignore_index=True)
+                df_arg = df_arg.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'arg': values["case1"]["Arg"]}, ignore_index=True)
             if values["case2"]["Arg"] != "false" and values["case2"]["Arg"] != None and values["case2"]["Arg"] != False:
                 surface , part , pos = remove_part(str(values["case2"]['surface']) if values["case2"]['surface'] != None else '*', values["case2"]['rel'])
-                df_role = df_role.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': '*', 'sem':semantic, 'role': values["case2"]["semrole"]}, ignore_index=True)
-                df_arg = df_arg.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': '*', 'sem':semantic, 'arg': values["case2"]["Arg"]}, ignore_index=True)
+                df_role = df_role.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'role': values["case2"]["semrole"]}, ignore_index=True)
+                df_arg = df_arg.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'arg': values["case2"]["Arg"]}, ignore_index=True)
             if values["case3"]["Arg"] != "false" and values["case3"]["Arg"] != None and values["case3"]["Arg"] != False:
                 surface , part , pos = remove_part(str(values["case3"]['surface']) if values["case3"]['surface'] != None else '*', values["case3"]['rel'])
-                df_role = df_role.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': '*', 'sem':semantic, 'role': values["case3"]["semrole"]}, ignore_index=True)
-                df_arg = df_arg.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': '*', 'sem':semantic, 'arg': values["case3"]["Arg"]}, ignore_index=True)
+                df_role = df_role.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'role': values["case3"]["semrole"]}, ignore_index=True)
+                df_arg = df_arg.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'arg': values["case3"]["Arg"]}, ignore_index=True)
             if values["case4"]["Arg"] != "false" and values["case4"]["Arg"] != None and values["case4"]["Arg"] != False:
                 surface , part , pos = remove_part(str(values["case4"]['surface']) if values["case4"]['surface'] != None else '*', values["case4"]['rel'])
-                df_role = df_role.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': '*', 'sem':semantic, 'role': values["case4"]["semrole"]}, ignore_index=True)
-                df_arg = df_arg.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': '*', 'sem':semantic, 'arg': values["case4"]["Arg"]}, ignore_index=True)
+                df_role = df_role.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'role': values["case4"]["semrole"]}, ignore_index=True)
+                df_arg = df_arg.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'arg': values["case4"]["Arg"]}, ignore_index=True)
             if values["case5"]["Arg"] != "false" and values["case5"]["Arg"] != None and values["case5"]["Arg"] != False:
                 surface , part , pos = remove_part(str(values["case5"]['surface']) if values["case5"]['surface'] != None else '*', values["case5"]['rel'])
-                df_role = df_role.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': '*', 'sem':semantic, 'role': values["case5"]["semrole"]}, ignore_index=True)
-                df_arg = df_arg.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': '*', 'sem':semantic, 'arg': values["case5"]["Arg"]}, ignore_index=True)
+                df_role = df_role.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'role': values["case5"]["semrole"]}, ignore_index=True)
+                df_arg = df_arg.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'arg': values["case5"]["Arg"]}, ignore_index=True)  
     makeModel_role(df_role)
     makeModel_arg(df_arg)
-    # #model = BayesianModel([('sem','role'),('sem','voice'),('sem','verb'),('role','arg'),('role','pos'),('role','rel')])
-    # model = BayesianModel([('sem','role'),('sem','voice'),('sem','verb'),('role','surface'),('role','pos'),('role','rel')])
-    # #model = BayesianModel([('sem','arg'),('sem','voice'),('sem','verb'),('arg','surface'),('arg','pos'),('arg','rel')])
-    # model.fit(df,estimator=BayesianEstimator)
-    # filename = 'model_pth.pickle' #変えてもいい
-    # with open('model_pth.pickle', mode='wb') as f:
-    #         pickle.dump(model,f)    
-    print('終了')
-    #TODO modelの作り直し。Arg_surfに入るのは例えば「部署が動く」なら「部署が」「動く」今入っているのはArg1とかArg0とか？posに入るのはなに？
-    #今は sem = 状態変化... verb = 動く Arg = Arg1 pos = 部署 rel = が voice = * role = 対象
-    #     sem = 状態変化... verb = 動く Arg = Arg1 (別々のモデル) surface = 部署 pos = 名詞？ rel = が voice = * role = 対象 Argとroleは別々のモデル
 
-    # Mecabで品詞解析->posに入れる。surfaceは表層＝部署
+    print('終了')
 
