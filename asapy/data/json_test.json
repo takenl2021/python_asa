@@ -1,0 +1,82 @@
+{
+    "cases": [
+        {
+            "noun": "部署",
+            "semrole": "Arg1",
+            "part": "が"
+        }
+    ]
+}
+{
+    "cases": [
+        {
+            "noun": "正社員",
+            "semrole": "Arg1",
+            "part": "が"
+        }
+    ]
+},{
+    "cases": [
+        {
+            "noun": "守備",
+            "semrole": "Arg1",
+            "part": "が"
+        }
+    ]
+},{
+    "cases": [
+        {
+            "noun": "会社",
+            "semrole": "Arg0",
+            "part": "が"
+        }
+    ]
+}{
+    "cases": [
+        {
+            "noun": "ナイン",
+            "semrole": "Arg0",
+            "part": "が"
+        }
+    ]
+}{
+    "cases": [
+        {
+            "noun": "男",
+            "semrole": "Arg0",
+            "part": "が"
+        }
+    ]
+}{
+    "cases": [
+        {
+            "noun": "客",
+            "semrole": "Arg0",
+            "part": "が"
+        }
+    ]
+}{
+    "cases": [
+        {
+            "noun": "容疑者",
+            "semrole": "Arg0",
+            "part": "が"
+        }
+    ]
+}{
+    "cases": [
+        {
+            "noun": "若者",
+            "semrole": "Arg0",
+            "part": "が"
+        }
+    ]
+}{
+    "cases": [
+        {
+            "noun": "若者",
+            "semrole": "Arg0",
+            "part": "が"
+        }
+    ]
+}

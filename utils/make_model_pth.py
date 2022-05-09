@@ -34,13 +34,6 @@ def remove_part(surface,part):
     tree = cp.parse(surface)
     pos = re.split('[*]', tree.token(0).feature)
     pos = pos[0][:-1]
-    # for i in range(tree.size()):
-    #     tok = tree.token(i)
-    #     print('品詞:', tok.feature)
-        
-    #     print(pos[0][:-1])
-    #     print('表層形:', tok.surface)
-    #     print('-' * 40)
     try:
         spliter = re.split('[・?]',part)
     except TypeError:
@@ -50,7 +43,7 @@ def remove_part(surface,part):
         if surface != surface.rstrip(split):
             surface = surface.rstrip(split)
             part = split
-    #print(surface,part, pos)
+    print(surface,part, pos)
     return surface , part , pos 
 
     #partにNoneが出るけど問題なし Noneが出るのはArg-CMDとかの原因が振られているところ
@@ -125,7 +118,7 @@ if __name__ == '__main__':
     sheet = wb['pth20210305-sjis']
     df_role = pd.DataFrame(columns=columns_role)
     df_arg = pd.DataFrame(columns=columns_arg)
-    for i in range(2,DATA_NUM): #2
+    for i in range(2,24130): #2
         values = returnValue(i,sheet)
         semantic = ""
         voice = ""
@@ -140,24 +133,39 @@ if __name__ == '__main__':
         else:
             if values["case1"]["Arg"] != "false" and values["case1"]["Arg"] != None and values["case1"]["Arg"] != False:
                 surface , part , pos = remove_part(str(values["case1"]['surface']) if values["case1"]['surface'] != None else '*', values["case1"]['rel'])
-                df_role = df_role.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'role': values["case1"]["semrole"]}, ignore_index=True)
-                df_arg = df_arg.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'arg': values["case1"]["Arg"]}, ignore_index=True)
+                append_data_role ={'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'role': values["case1"]["semrole"]}
+                append_data_arg ={'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'arg': values["case1"]["Arg"]}
+                df_role = df_role.append(append_data_role, ignore_index=True)
+                df_arg = df_arg.append(append_data_arg, ignore_index=True)
+
             if values["case2"]["Arg"] != "false" and values["case2"]["Arg"] != None and values["case2"]["Arg"] != False:
                 surface , part , pos = remove_part(str(values["case2"]['surface']) if values["case2"]['surface'] != None else '*', values["case2"]['rel'])
-                df_role = df_role.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'role': values["case2"]["semrole"]}, ignore_index=True)
-                df_arg = df_arg.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'arg': values["case2"]["Arg"]}, ignore_index=True)
+                append_data_role ={'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'role': values["case2"]["semrole"]}
+                append_data_arg ={'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'arg': values["case2"]["Arg"]}
+                df_role = df_role.append(append_data_role, ignore_index=True)
+                df_arg = df_arg.append(append_data_arg, ignore_index=True)
+
             if values["case3"]["Arg"] != "false" and values["case3"]["Arg"] != None and values["case3"]["Arg"] != False:
                 surface , part , pos = remove_part(str(values["case3"]['surface']) if values["case3"]['surface'] != None else '*', values["case3"]['rel'])
-                df_role = df_role.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'role': values["case3"]["semrole"]}, ignore_index=True)
-                df_arg = df_arg.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'arg': values["case3"]["Arg"]}, ignore_index=True)
+                append_data_role ={'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'role': values["case3"]["semrole"]}
+                append_data_arg ={'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'arg': values["case3"]["Arg"]}
+                df_role = df_role.append(append_data_role, ignore_index=True)
+                df_arg = df_arg.append(append_data_arg, ignore_index=True)
+
             if values["case4"]["Arg"] != "false" and values["case4"]["Arg"] != None and values["case4"]["Arg"] != False:
                 surface , part , pos = remove_part(str(values["case4"]['surface']) if values["case4"]['surface'] != None else '*', values["case4"]['rel'])
-                df_role = df_role.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'role': values["case4"]["semrole"]}, ignore_index=True)
-                df_arg = df_arg.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'arg': values["case4"]["Arg"]}, ignore_index=True)
+                append_data_role ={'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'role': values["case4"]["semrole"]}
+                append_data_arg ={'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'arg': values["case4"]["Arg"]}
+                df_role = df_role.append(append_data_role, ignore_index=True)
+                df_arg = df_arg.append(append_data_arg, ignore_index=True)
+
             if values["case5"]["Arg"] != "false" and values["case5"]["Arg"] != None and values["case5"]["Arg"] != False:
                 surface , part , pos = remove_part(str(values["case5"]['surface']) if values["case5"]['surface'] != None else '*', values["case5"]['rel'])
-                df_role = df_role.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'role': values["case5"]["semrole"]}, ignore_index=True)
-                df_arg = df_arg.append({'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'arg': values["case5"]["Arg"]}, ignore_index=True)  
+                append_data_role ={'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'role': values["case5"]["semrole"]}
+                append_data_arg ={'verb': values["verb"]["verb_main"], 'surface': str(surface) , 'pos': pos, 'rel': part, 'voice': voice, 'sem':semantic, 'arg': values["case5"]["Arg"]}
+                df_role = df_role.append(append_data_role, ignore_index=True)
+                df_arg = df_arg.append(append_data_arg, ignore_index=True)
+                
     makeModel_role(df_role)
     makeModel_arg(df_arg)
 

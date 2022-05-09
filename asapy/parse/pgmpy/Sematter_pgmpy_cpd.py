@@ -23,24 +23,24 @@ class Sematter():
         self.calc = Calculate(frames)
         self.adjunct = Adjunct()
         self.nounstruct = NounStructure(nouns, frames)
-        self.model = self.__getModel('../utils/model_pth.pickle')
-        self.ve_role = self.__getVe_role('../utils/model_pth_role.pickle')
-        self.ve_arg = self.__getVe_role('../utils/model_pth_arg.pickle')
+        # self.model = self.__getModel('../utils/model_pth.pickle')
+        # self.ve_role = self.__getVe_role('../utils/model_pth_role.pickle')
+        # self.ve_arg = self.__getVe_role('../utils/model_pth_arg.pickle')
         self.sheet = self.__getSheet("filepath")
-        #self.model_role = self.model = self.__getModel('../utils/model_pth_role.pickle')
-        #self.model_arg = self.model = self.__getModel('../utils/model_pth_arg.pickle')
-        #self.cpd_surface = self.model_role.get_cpds('surface')
-        # self.cpd_pos = self.model_role.get_cpds('pos')
-        # self.cpd_rel = self.model_role.get_cpds('rel')
-        # self.cpd_sem = self.model_role.get_cpds('sem')
-        # self.cpd_role = self.model_role.get_cpds('role')
-        # self.cpd_verb = self.model_role.get_cpds('verb')
-        # self.cpd_arg = self.model_arg.get_cpds('arg')
-        # self.cpd_arg_surface = self.model_arg.get_cpds('surface')
-        # self.cpd_arg_pos = self.model_arg.get_cpds('pos')
-        # self.cpd_arg_rel = self.model_arg.get_cpds('rel')
-        # self.cpd_arg_sem = self.model_arg.get_cpds('sem')
-        # self.cpd_arg_verb = self.model_arg.get_cpds('verb')
+        self.model_role = self.model = self.__getModel('../utils/model_pth_role.pickle')
+        self.model_arg = self.model = self.__getModel('../utils/model_pth_arg.pickle')
+        self.cpd_surface = self.model_role.get_cpds('surface')
+        self.cpd_pos = self.model_role.get_cpds('pos')
+        self.cpd_rel = self.model_role.get_cpds('rel')
+        self.cpd_sem = self.model_role.get_cpds('sem')
+        self.cpd_role = self.model_role.get_cpds('role')
+        self.cpd_verb = self.model_role.get_cpds('verb')
+        self.cpd_arg = self.model_arg.get_cpds('arg')
+        self.cpd_arg_surface = self.model_arg.get_cpds('surface')
+        self.cpd_arg_pos = self.model_arg.get_cpds('pos')
+        self.cpd_arg_rel = self.model_arg.get_cpds('rel')
+        self.cpd_arg_sem = self.model_arg.get_cpds('sem')
+        self.cpd_arg_verb = self.model_arg.get_cpds('verb')
 
     def __getModel(self , filepath):
         #jsonバージョンは model_json.pickle
@@ -137,11 +137,11 @@ class Sematter():
     def parse(self, result: Result) -> None:
         verbchunks = self.__getSemChunks(result)
         for verbchunk in verbchunks:
-            #semantics = self.__getSemantics(verbchunk.main)
+            semantics = self.__getSemantics(verbchunk.main)
             linkchunks = self.__getLinkChunks(verbchunk)
             self.__setAnotherPart(linkchunks)
-            #self.__esti_role_sem(linkchunks, verbchunk, semantics)
-            self.calc_model(verbchunk,verbchunk.main,linkchunks, result) #ここでモデルの計算
+            self.__esti_role_sem(linkchunks, verbchunk, semantics)
+            #self.calc_model(verbchunk,verbchunk.main,linkchunks, result) #ここでモデルの計算
             #frame = self.calc.getFrame(verbchunk.main, linkchunks)
             # if frame:
             #     semantic, similar, insts = frame
