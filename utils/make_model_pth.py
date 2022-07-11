@@ -36,7 +36,7 @@ def remove_part(surface,part):
     pos = pos[0][:-1]
     try:
         spliter = re.split('[・?]',part)
-    except TypeError:
+    except TypeError: ##原因は助詞がないこと = partがNone
         print("TypeERROR",surface,part, pos)
         return surface, part , pos
     for split in spliter:

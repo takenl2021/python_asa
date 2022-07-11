@@ -74,6 +74,7 @@ class Sematter():
             evidence=[State('verb',verb_index),State('surface',surface_index),State('pos',pos_index),State('rel',rel_index),State('voice',voice_index)]
             gen = inference.likelihood_weighted_sample(evidence=evidence,size=1)
             print(gen)
+            #この後得られたgenを変換して付与する
         exit()
 
     def parse(self, result: Result) -> None:

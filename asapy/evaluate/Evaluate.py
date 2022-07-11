@@ -175,7 +175,7 @@ class Evaluate():
                 semantic += "-"
             else:
                 semantic += "{}-".format(frame)
-        semantic = semantic[:-1]
+        #semantic = semantic[:-1]
         for morph in chunk.morphs:
             string_read += morph.read
 
@@ -236,8 +236,8 @@ class Evaluate():
                     self.SemanticCount['falseNegative'] += 1
                     correct_chunk['falseNegative'] = "FALSENEGATIVE"
                     return correct_chunk
-            else:
-                return correct_chunk
+        
+        return correct_chunk
                 #形態素解析のミス？
                 #self.SemanticCount['falsePositive'] += 1
                 #correct_chunk['verb_main'] = values['verb']['verb_main']
