@@ -18,9 +18,10 @@ class Evaluate():
         print("20000万件実行中")
         #for i in range(2,24130):
         #10360あたりのデータが壊れている
+        output_json = []
         for i in range(2,self.number): #2~24130
             print(i)
-            correct_json = {'correct':[]}
+            correct_json = {'output': {},'correct':[]}
             values = self.returnValue(i)
             if values['sentence'] == None:
                 continue
@@ -32,10 +33,9 @@ class Evaluate():
                     correct_chunk = self.chunkType(chunk, values)
                     if correct_chunk != {}:
                         correct_json['correct'].append(correct_chunk)
-                    if correct_json['correct'] != []:
-                        result_json = self.outputJson(result)
-                        filename =  "diff_ve/example_{}.json".format(i-1)
-                        self.outputJsonfile(correct_json, result_json,filename)
+                if correct_json['correct'] != []:
+                    result_json = self.outputJson(result)
+                    correct_json['output'] = result_json
         calc_values = self.calculate_value()
         self.outputResult(calc_values)
 

@@ -5,7 +5,7 @@
 class JsonFile():
 
     def __init__(self):
-        self.frame = "dict/new_argframes.json"
+        self.frame = "dict/excel2json.json"
         self.dicframe = "dict/new_argframes.dic"
         self.cchart = "dict/ccharts.json"
         self.diccchart = "dict/ccharts.dic"

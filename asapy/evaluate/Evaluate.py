@@ -17,10 +17,10 @@ class Evaluate():
     def calculate(self):
         print("20000万件実行中")
         #for i in range(2,24130):
-        #10360あたりのデータが壊れている
+        output_json = []
         for i in range(2,self.number): #2~24130
             print(i)
-            correct_json = {'correct':[]}
+            correct_json = {'output': {},'correct':[]}
             values = self.returnValue(i)
             if values['sentence'] == None:
                 continue
@@ -32,12 +32,13 @@ class Evaluate():
                     correct_chunk = self.chunkType(chunk, values)
                     if correct_chunk != {}:
                         correct_json['correct'].append(correct_chunk)
-                    if correct_json['correct'] != []:
-                        result_json = self.outputJson(result)
-                        filename =  "diff/example_{}.json".format(i-1)
-                        self.outputJsonfile(correct_json, result_json,filename)
+                if correct_json['correct'] != []:
+                    result_json = self.outputJson(result)
+                    correct_json['output'] = result_json
+                    output_json.append(correct_json)
         calc_values = self.calculate_value()
         self.outputResult(calc_values)
+        self.outputJsonfile(output_json,"diff/diff_old.json")
 
 
     def __openSheet(self):
@@ -218,7 +219,7 @@ class Evaluate():
                 semantic += "-"
             else:
                 semantic += "{}-".format(frame)
-        semantic = semantic[:-1]
+        #semantic = semantic[:-1]
         for morph in chunk.morphs:
             string_read += morph.read
 
@@ -379,10 +380,9 @@ class Evaluate():
         print("Semrole" + str(self.SemroleCount))
         print("Arg" + str(self.ArgCount))
 
-    def outputJsonfile(self,correct_json, result_json, filename):
-            emptyList = [result_json, correct_json]
+    def outputJsonfile(self,output, filename):
             with open(filename,'w') as f: #example_number(1,2)
-                json.dump(emptyList,f,sort_keys=True,indent=4,ensure_ascii=False)
+                json.dump(output,f,sort_keys=True,indent=4,ensure_ascii=False)
     
     def outputJson(self, result: Result) -> None:
         result_json = {'chunks': [], 'surface': result.surface}
