@@ -2,7 +2,7 @@ from asapy.parse.analyzer.Analyzer import Analyzer
 from asapy.parse.analyzer.Basic import Basic
 from asapy.parse.feature.Tagger import Tagger
 from asapy.parse.idiom.Hiuchi import Hiuchi
-from asapy.parse.pgmpy.Sematter_pgmpy import Sematter
+from asapy.parse.bayse.Sematter_bayse import Sematter
 from asapy.parse.compoundPredicate.Synonym import Synonym
 from asapy.result.Result import Result
 from asapy.load.LoadJson import LoadJson

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import time
-from ASA_pgmpy import ASA
+from ASA_bayse import ASA
 
 if __name__ == '__main__':
     init_start = time.time()

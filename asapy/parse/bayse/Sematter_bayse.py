@@ -1,18 +1,15 @@
 from asapy.result.Result import Result
 from asapy.result.Morph import Morph
 from asapy.result.Chunk import Chunk
-from asapy.parse.pgmpy.Calculate_pgmpy import Calculate
-from asapy.parse.pgmpy.Adjunct_pgmpy import Adjunct
-from asapy.parse.pgmpy.NounStructure_pgmpy import NounStructure
+from asapy.parse.bayse.Calculate_bayse import Calculate
+from asapy.parse.bayse.Adjunct_bayse import Adjunct
+from asapy.parse.bayse.NounStructure_bayse import NounStructure
 
 import pickle
 import os
 import openpyxl
+import json
 
-from pgmpy.inference import VariableElimination
-from pgmpy.sampling import GibbsSampling
-from pgmpy.sampling import BayesianModelSampling
-from pgmpy.factors.discrete import State
 
 # 語義，意味役割を付与するためのクラス
 
@@ -25,57 +22,14 @@ class Sematter():
         self.calc = Calculate(frames)
         self.adjunct = Adjunct()
         self.nounstruct = NounStructure(nouns, frames)
-        self.ve_role = self.__getVe_role('../utils/model_pth_role.pickle')
-        self.ve_arg = self.__getVe_role('../utils/model_pth_arg.pickle')
-        self.model_role = self.__getModel('../utils/model_pth_role.pickle')
-        self.model_arg = self.__getModel('../utils/model_pth_arg.pickle')
-        self.state_names = self.model_role.get_cpds('role').state_names
+        self.mapping = self.__getMapping('../utils/mapping.json')
 
-    def __getModel(self , filepath):
-        #jsonバージョンは model_json.pickle
-        with open(filepath, mode='rb') as f:
-            model = pickle.load(f) 
-        return model
-    
-    def __getVe_role(self, filepath):
-        model = self.__getModel(filepath)
-        ve = VariableElimination(model)
-        return ve
-    
-    def __getVe_arg(self, filepath):
-        model = self.__getModel(filepth)
-        ve = VariableElimination(model)
-        return ve
+    def __getMapping(self, filename):
+        json_open = open(filename, 'r')
+        json_load = json.load(json_open)
+        print("JSONNOW")
+        return json_load
 
-    def __gibbs(self, verbchunk, verb, linkchunks, result):
-        inference = BayesianModelSampling(self.model_role)
-        for linkchunk in linkchunks:
-            if linkchunk.morphs[0].pos in self.state_names['pos']:
-                pos_index = self.state_names['pos'].index(linkchunk.morphs[0].pos)
-            else:
-                exit()
-            if linkchunk.main in self.state_names['surface']:
-                surface_index = self.state_names['surface'].index(linkchunk.main)
-            else:
-                exit()
-            if linkchunk.part in self.state_names['rel']:
-                rel_index = self.state_names['rel'].index(linkchunk.part)
-            else:
-                exit()
-            if verbchunk.main in self.state_names['verb']:
-                verb_index = self.state_names['verb'].index(verb)
-            else:
-                exit()
-            if verbchunk.voice in self.state_names['voice']:
-                voice_index = self.state_names['voice'].index(verbchunk.voice)
-            else:
-                exit()
-            #evidence=[{'verb':verb_index,'surface': surface_index, 'pos': pos_index, 'rel': rel_index, 'voice': voice_index}]
-            evidence=[State('verb',verb_index),State('surface',surface_index),State('pos',pos_index),State('rel',rel_index),State('voice',voice_index)]
-            gen = inference.likelihood_weighted_sample(evidence=evidence,size=1)
-            print(gen)
-            #この後得られたgenを変換して付与する
-        exit()
 
     def parse(self, result: Result) -> None:
         verbchunks = self.__getSemChunks(result)

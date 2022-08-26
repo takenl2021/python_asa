@@ -1,6 +1,6 @@
 from asapy.init.JsonFile import JsonFile
 from asapy.load.LoadJson import LoadJson
-from asapy.parse.Parse_pgmpy import Parse
+from asapy.parse.Parse_bayse import Parse
 from asapy.output.Output import Output
 from asapy.result.Result import Result
 
