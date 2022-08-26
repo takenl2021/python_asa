@@ -111,14 +111,18 @@ def makeModel_arg(df):
             pickle.dump(model,f)  
 
 if __name__ == '__main__':
-    DATA_NUM = 24130
+    #DATA_NUM = 24130 #旧データ
+    DATA_NUM = 24577
     columns_role = ['verb', 'surface', 'pos', 'rel', 'voice', 'sem', 'role']
     columns_arg = ['verb', 'surface', 'pos', 'rel', 'voice', 'sem', 'arg']
-    wb = openpyxl.load_workbook('/home/ooka/study/python_asa/asapy/data/pth20210305.xlsx') #should be changed
-    sheet = wb['pth20210305-sjis']
+    #旧データ
+    # wb = openpyxl.load_workbook('/home/ooka/study/python_asa/asapy/data/pth20210305.xlsx') #should be changed
+    # sheet = wb['pth20210305-sjis']
+    wb = openpyxl.load_workbook('/home/ooka/study/python_asa/asapy/data/動詞辞書_220711.xlsx') #should be changed
+    sheet1 = wb['dup_checked_pth']
     df_role = pd.DataFrame(columns=columns_role)
     df_arg = pd.DataFrame(columns=columns_arg)
-    for i in range(2,24130): #2
+    for i in range(2,DATA_NUM): #2
         values = returnValue(i,sheet)
         semantic = ""
         voice = ""

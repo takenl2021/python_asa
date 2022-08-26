@@ -29,7 +29,7 @@ categorys_open = open('categorys.json','r')
 categorys = json.load(categorys_open)
 
 wb = openpyxl.load_workbook('/home/ooka/study/python_asa/asapy/data/pth20210305.xlsx') #should be changed
-sheet = wb['pth20210305-sjis']
+sheet = wb['pth20210305-sjis'] #should be changed
 
 def returnValue(id,data):
         obj = "A{}:BB{}".format(id,id)
