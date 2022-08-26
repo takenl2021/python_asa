@@ -23,3 +23,6 @@ class Dict2():
                     frame = ins['frame']
                     break
         return frame
+
+    def returnAlljson(self):
+        return self.frames

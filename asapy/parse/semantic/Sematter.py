@@ -5,7 +5,6 @@ from asapy.parse.semantic.Calculate import Calculate
 from asapy.parse.semantic.Adjunct import Adjunct
 from asapy.parse.semantic.NounStructure import NounStructure
 
-import pprint
 
 # 語義，意味役割を付与するためのクラス
 
@@ -38,7 +37,6 @@ class Sematter():
         self.__setInversedSemantic(result)
         return result
 
-    #
     # 係り先である節を取得
     #
     def __getSemChunks(self, result: Result) -> list:

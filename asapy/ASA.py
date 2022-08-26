@@ -2,6 +2,7 @@ from asapy.init.JsonFile import JsonFile
 from asapy.load.LoadJson import LoadJson
 from asapy.parse.Parse import Parse
 from asapy.output.Output import Output
+from asapy.result.Result import Result
 
 #from memory_profiler import profile
 
