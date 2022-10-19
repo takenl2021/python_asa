@@ -103,13 +103,13 @@ if __name__ == '__main__':
     arg_mapping = {}
     voice_mapping = {}
 
-    verb_index = 1
-    role_index = 1
-    surface_index = 1
-    rel_index = 1
-    pos_index = 1
-    arg_index = 1
-    voice_index = 1
+    verb_index = 0
+    role_index = 0
+    surface_index = 0
+    rel_index = 0
+    pos_index = 0
+    arg_index = 0
+    voice_index = 0
 
     output_json = {}
 

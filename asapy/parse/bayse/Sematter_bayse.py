@@ -35,9 +35,10 @@ class Sematter():
         verbchunks = self.__getSemChunks(result)
         for verbchunk in verbchunks:
             linkchunks = self.__getLinkChunks(verbchunk)
-            self.__gibbs(verbchunk,verbchunk.main,linkchunks, result)
             self.__setAnotherPart(linkchunks)
-            self.calc_model(verbchunk,verbchunk.main,linkchunks, result) #VariableElimination
+            ## ここでbayseをやってみる
+            mapping()
+            byase(result)
             #frame = self.calc.getFrame(verbchunk.main, linkchunks)
             # if frame:
             #     semantic, similar, insts = frame
@@ -52,38 +53,10 @@ class Sematter():
         # self.__setInversedSemantic(result)
         return result
 
-    def calc_model(self, verbchunk, verb, linkchunks, result): #予測
-        for linkchunk in linkchunks:
-            try:
-                evidence = {'verb':verb,'surface': linkchunk.main, 'pos':linkchunk.morphs[0].pos,'rel':linkchunk.part,'voice':verbchunk.voice}
-                estimate_role = self.ve_role.map_query(variables=['sem','role'], evidence=evidence)
-                estimate_arg = self.ve_arg.map_query(variables=['sem','arg'], evidence=evidence)
-                self.__setRole_estimate(linkchunk, verbchunk , estimate_role)
-                self.__setArg_estimate(linkchunk, estimate_arg)
-                #self.adjunct.parse(verbchunk.modifiedchunks)
-            except:
-                print("ERROR occured")
-                #self.adjunct.parse(verbchunk.modifiedchunks)
-                # frame = self.calc.getFrame(verbchunk.main, linkchunks)
-                # if frame:
-                #     semantic, similar, insts = frame
-                #     self.__setSemantic(semantic, similar, verbchunk)
-                #     self.__setSemRole(insts)
-                #     self.__setArg(insts)
-                #     self.__setSpecialSemantic(verbchunk)
-                #     self.adjunct.parse(verbchunk.modifiedchunks)
+    def mapping(self):
+        
+    def bayse(self, result:Result):
 
-            #TODO try-exceptの処理の改善->精度の向上
-
-    def __setRole_estimate(self, linkchunk, verbchunk, esti):
-        if esti['role']:
-            linkchunk.semrole.append(esti['role'])
-        if esti['sem']:
-                verbchunk.semantic = esti['sem']
-    
-    def __setArg_estimate(self, linkchunk, esti):
-        if esti['arg']:
-            linkchunk.arg.append(esti['arg'])
     #
     # 係り先である節を取得
     #
