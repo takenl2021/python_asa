@@ -113,7 +113,7 @@ if __name__ == '__main__':
 
     output_json = {}
 
-    for i in range(2,DATA_NUM):
+    for i in range(2,50):
         values = returnValue(i,sheet1)
         semantic = ""
         voice = ""

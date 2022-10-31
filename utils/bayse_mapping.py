@@ -49,7 +49,7 @@ if __name__ == '__main__':
     frame_data = []
     v_surf_data = []
 
-    for i in range(2,1000):
+    for i in range(2,50):
         values = returnValue(i,sheet1)
         semantic = ""
         voice = ""
@@ -85,51 +85,84 @@ if __name__ == '__main__':
             if values["case5"]["arg"] != "false" and values["case5"]["arg"] != None and values["case5"]["arg"] != False:
                 role_index = mapping_json['role_mapping'].get(values["case5"]["role"])
 
-    #確率ではいらなかった
-    # frame_prob = np.asarray(frame_prob).astype('float64')
-    # frame_prob = frame_prob / np.sum(frame_prob)
-    
-    # role_prob = np.asarray(role_prob).astype('float64')
-    # role_prob_tt = []
-    # for each_role_prob in role_prob:
-    #     each_role_prob = each_role_prob / np.sum(each_role_prob)
-    #     role_prob_tt.append(each_role_prob)
-
-    # # http://jrf.cocolog-nifty.com/statuses/2021/02/post-b7b5ba.html 確率が1でないというエラーに対する対処
-    # print("frame_prob", frame_prob)
-    # print("role_prob", role_prob_tt)
     F = len(mapping_json['sem_mapping']) #概念フレーム数
-    V = len(mapping_json['verb_mapping']) #意味役割数
+    print(F)
+    print(frame_data)
 
-    n_sample = 998
+    V = len(mapping_json['verb_mapping']) #意味役割数
+    print("V=",V)
+    print(v_surf_data)
+
+
+    n_sample = 48 #ValueError: Input dimension mis-match. (input[0].shape[0] = 28, input[1].shape[0] = 998) <=?エラー
+
     with pm.Model() as model:
 
         # ベースデータ
-        fdata = pm.Data("fdata",frame_data) #dataって何だろう #data = [fid]
-        vdata = pm.Data("vdata",v_surf_data) #dataって何だろう #data = [v_surf]
-
+        fiddata = pm.Data("fiddata",frame_data) #dataって何だろう #data = [fid]
+        vdata = pm.Data("vdata",v_surf_data)
         
         # 混合比率
-        pi_fid = pm.Dirichlet("pi_fid", a=np.ones(F), shape=F)
-        pi_v_surf = pm.Dirichlet("pi_v_surf", a=np.ones(V), shape=V)
-        
-        # クラスタごとの正規分布の平均(shapeに合わせてブロードキャストされる)
-        mu_fid = pm.Normal("mu_fid", mu=0, sigma=10, shape=F)
-        mu_v_surf = pm.Normal("mu_v_surf", mu=0, sigma=10, shape=V)
-        
-        # クラスタごとの正規分布の標準偏差(shapeに合わせてブロードキャストされる)
-        sigma_fid = pm.HalfCauchy("sigma_fid", beta=3, shape=F)
-        sigma_v_surf = pm.HalfCauchy("sigma_v_surf", beta=3, shape=V)
+        pi_fid = pm.Dirichlet("pi_fid", a=np.ones(F))
+        pi_v_surf = pm.Dirichlet("pi_v_surf", a=np.ones(V))
 
         # クラスタ割り当てを示す潜在変数
         z_fid = pm.Categorical("z_fid", p=pi_fid, shape=n_sample)
+        x_fid = pm.Categorical("x_fid",p=pi_v_surf[z_fid],shape=n_sample)
+        # 観測モデル
+
+    with model:
+        trace = pm.sample(1000, tune=1000, chains=1, random_seed=1, return_inferencedata=True, init='adapt_diag')
+    print("trace mu==",trace.posterior)
+    exit()
+
+    with pm.Model() as model_fid:
+
+        # ベースデータ
+        fiddata = pm.Data("fiddata",frame_data) #dataって何だろう #data = [fid]
+        
+        # 混合比率
+        pi_fid = pm.Dirichlet("pi_fid", a=np.ones(F), shape=F)
+        
+        # クラスタごとの正規分布の平均(shapeに合わせてブロードキャストされる)
+        mu_fid = pm.Normal("mu_fid", mu=0, sigma=10, shape=F)
+        
+        # クラスタごとの正規分布の標準偏差(shapeに合わせてブロードキャストされる)
+        sigma_fid = pm.HalfCauchy("sigma_fid", beta=3, shape=F)
+
+        # クラスタ割り当てを示す潜在変数
+        z_fid = pm.Categorical("z_fid", p=pi_fid, shape=n_sample)
+        # 観測モデル
+        x_fid = pm.Normal("x_fid", mu=mu_fid[z_fid], sigma=sigma_fid[z_fid], observed=fiddata)
+
+    with model_fid:
+        trace = pm.sample(1000, tune=1000, chains=1, random_seed=1, return_inferencedata=True, init='adapt_diag')
+
+    print("trace mu==",trace.posterior)
+    exit()
+
+    n_sample = 48
+    with pm.Model() as model_v_surf:
+
+        # ベースデータ
+        vdata = pm.Data("vdata",v_surf_data) #dataって何だろう #data = [v_surf]
+        
+        # 混合比率
+        pi_v_surf = pm.Dirichlet("pi_v_surf", a=np.ones(V), shape=V)
+        
+        # クラスタごとの正規分布の平均(shapeに合わせてブロードキャストされる)
+        mu_v_surf = pm.Normal("mu_v_surf", mu=0, sigma=10, shape=V)
+        
+        # クラスタごとの正規分布の標準偏差(shapeに合わせてブロードキャストされる)
+        sigma_v_surf = pm.HalfCauchy("sigma_v_surf", beta=3, shape=V)
+
+        # クラスタ割り当てを示す潜在変数
         z_v_surf = pm.Categorical("z_v_surf", p=pi_v_surf, shape=n_sample)
 
         # 観測モデル
-        x_fid = pm.Normal("x_fid", mu=mu_fid[z_fid], sigma=sigma_fid[z_fid], observed=fdata)
         x_v_surf = pm.Normal("x_v_surf", mu=mu_v_surf[z_v_surf], sigma=sigma_v_surf[z_v_surf], observed=vdata)
 
-    with model:
+    with model_v_surf:
         trace = pm.sample(5000, tune=1000, chains=1, random_seed=1, return_inferencedata=True)
 
     print("trace mu==",trace.posterior)
