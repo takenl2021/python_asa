@@ -113,7 +113,7 @@ if __name__ == '__main__':
 
     output_json = {}
 
-    for i in range(2,50):
+    for i in range(2,1000):
         values = returnValue(i,sheet1)
         semantic = ""
         voice = ""
@@ -246,7 +246,7 @@ if __name__ == '__main__':
     output_json.setdefault("surface_mapping", surface_mapping)
     output_json.setdefault("arg_mapping", pos_mapping)
 
-    filename = 'mapping.json' #変えてもいい
+    filename = 'mapping_1000.json' #変えてもいい
     with open(filename, mode='w') as f:
             json.dump(output_json,f,ensure_ascii=False)  
 
