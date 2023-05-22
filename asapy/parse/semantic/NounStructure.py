@@ -76,7 +76,7 @@ class NounStructure():
 
     def __setFrame(self, nounset: tuple) -> None:
         similar, insts, agent = nounset
-        print(agent)
+        #print(agent)
         for pair in insts:
             argsimilar, icase, chunk = pair
             chunk.noun_semrole = icase['semrole']

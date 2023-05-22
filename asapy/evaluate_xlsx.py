@@ -2,7 +2,7 @@ import time
 from asapy.result.Result import Result
 from evaluate.Evaluate import Evaluate
 
-EXAMPLES = 24130 #should be changed
+EXAMPLES = 24577 #should be changed
 
 if __name__ == '__main__':
     init_start = time.time()

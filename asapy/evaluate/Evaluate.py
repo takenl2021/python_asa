@@ -4,10 +4,12 @@ import json
 from ASA import ASA
 import time
 
+MAX_DATA_NUM = 24577
+
 class Evaluate():
 
     def __init__(self) -> None:
-        self.number = 24130
+        self.number = MAX_DATA_NUM
         self.sheet = self.__openSheet()
         self.SemanticCount = {'true': 0, 'falsePositive' :0, 'falseNegative' : 0}
         self.ArgCount = {'true': 0, 'falsePositive' : 0, 'falseNegative' :0}
@@ -16,9 +18,8 @@ class Evaluate():
 
     def calculate(self):
         print("20000万件実行中")
-        #for i in range(2,24130):
         output_json = []
-        for i in range(2,self.number): #2~24130
+        for i in range(2,self.number): #2~24577
             print(i)
             correct_json = {'output': {},'correct':[]}
             values = self.returnValue(i)
@@ -42,8 +43,10 @@ class Evaluate():
 
 
     def __openSheet(self):
-        wb = openpyxl.load_workbook('data/pth20210305.xlsx')
-        sheet = wb['pth20210305-sjis']
+        #wb = openpyxl.load_workbook('data/pth20210305.xlsx')
+        #sheet = wb['pth20210305-sjis']
+        wb = openpyxl.load_workbook('/home/ooka/study/python_asa/asapy/data/動詞辞書_220711.xlsx') #should be changed
+        sheet = wb['dup_checked_pth'] #should be changed
         return sheet
 
     def returnValue(self, id):
@@ -172,10 +175,12 @@ class Evaluate():
         correct_chunk = {}
         
         for frame in values['semantic'].values():
-            if frame == None:
+            if frame != None:
+                semantic += "{}-".format(frame)
+            """if frame == None:
                 semantic += "-"
             else:
-                semantic += "{}-".format(frame)
+                semantic += "{}-".format(frame)"""
         #semantic = semantic[:-1]
         for morph in chunk.morphs:
             string_read += morph.read
@@ -215,10 +220,12 @@ class Evaluate():
         semantic = ""
         
         for frame in values['semantic'].values():
-            if frame == None:
+            if frame != None:
+                semantic += "{}-".format(frame)
+            """if frame == None:
                 semantic += "-"
             else:
-                semantic += "{}-".format(frame)
+                semantic += "{}-".format(frame)"""
         #semantic = semantic[:-1]
         for morph in chunk.morphs:
             string_read += morph.read

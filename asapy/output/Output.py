@@ -77,6 +77,7 @@ class Output():
             print("\tpart: " + chunk.part)
         if chunk.category:
             print("\tcategory: " + chunk.category[0])
+        print(chunk.semrole)
         if chunk.semrole:
             print("\tsemrole: " + "|".join(chunk.semrole))
         if chunk.arg:

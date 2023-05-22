@@ -25,11 +25,13 @@ import MeCab
 import CaboCha
 import math
 
+MAX_DATA_NUM = 24577
+
 categorys_open = open('categorys.json','r')
 categorys = json.load(categorys_open)
 
-wb = openpyxl.load_workbook('/home/ooka/study/python_asa/asapy/data/pth20210305.xlsx') #should be changed
-sheet = wb['pth20210305-sjis'] #should be changed
+wb = openpyxl.load_workbook('/home/ooka/study/python_asa/asapy/data/動詞辞書_220711.xlsx') #should be changed
+sheet = wb['dup_checked_pth'] #should be changed
 
 def returnValue(id,data):
         obj = "A{}:BB{}".format(id,id)
@@ -135,7 +137,7 @@ def make_weight(values, semantic, verb_weight, semantic_weight, index):
 
 verb_list = {} #varb_list has verbkey and id which is excel row number. {"買う", [1,2,3]}
 output_json = {"dict":[]}
-for i in range(2,24130):
+for i in range(2,MAX_DATA_NUM):
     obj = "A{}:BB{}".format(i,i)
     cell = sheet[obj]
     verb = {"verb_main":cell[0][2].value,"verb_read":cell[0][3].value}
@@ -152,10 +154,12 @@ for verb, v in verb_list.items():
         semantic = ""
         values = returnValue(index, sheet)
         for frame in values['semantic'].values():
-            if frame == None:
+            if frame != None:
+                semantic += "{}-".format(frame)
+            """if frame == None:
                 semantic += "-"
             else:
-                semantic += "{}-".format(frame)
+                semantic += "{}-".format(frame)"""
         if values["case1"]["Arg"] != "false" and values["case1"]["Arg"] != None and values["case1"]["Arg"] != False:
             make_weight(values["case1"],semantic, verb_weight, semantic_weight, index)
 
@@ -180,10 +184,12 @@ for verb, v in verb_list.items():
         semantic = ""
         for frame in values['semantic'].values():
             flg = False
-            if frame == None:
+            if frame != None:
+                semantic += "{}-".format(frame)
+            """if frame == None:
                 semantic += "-"
             else:
-                semantic += "{}-".format(frame)
+                semantic += "{}-".format(frame)"""
         if values["case1"]["Arg"] != "false" and values["case1"]["Arg"] != None and values["case1"]["Arg"] != False:
             case = make_cases(values["case1"], semantic, verb_weight, semantic_weight, index)
             cases.append(case)
