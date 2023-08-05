@@ -20,6 +20,15 @@ python版日本語意味役割付与システム（ASA）
 ## 使用方法
 ```cd asapy```でディレクトリを移動し、
 ```python main.py``` で起動して標準入力を受け付けます。
+pythonのコード内では
+```
+import asapy.ASA as ASA
+inp = input()    
+asa = ASA()
+asa.parse(inp)
+asa.selectOutput()
+```
+これで標準入力から文を入れると解析結果が得られる
 
 ## 変更点
 
